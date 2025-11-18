@@ -1,0 +1,68 @@
+.app-container {
+  font-family: Arial, sans-serif;
+  color: #1a1a1a;
+}
+
+.header {
+  border-bottom: 1px solid #e5e5e5;
+  padding: 16px 0;
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.logo-icon {
+  background: #e8eaff;
+  color: #4b57ff;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #444;
+  font-size: 15px;
+}
+
+.get-started {
+  padding: 8px 16px;
+  background: #4b57ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.footer {
+  margin-top: 40px;
+  padding: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  border-top: 1px solid #eee;
+}
