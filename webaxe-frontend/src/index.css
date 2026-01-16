@@ -1,21 +1,34 @@
+/* Updated: Ensure header title stays perfectly centered and the hamburger sits at the right corner.
+   Key change: make the header a positioned container and center the title with absolute positioning
+   while anchoring the hamburger to the right. This avoids flex centering pushing the button to center.
+*/
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-weight: 400;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #f8f7ff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --nav-height: 64px;
+  --accent: #646cff;
+  --bg: #ffffff;
+  --text: #111827;
+
+  --motion-duration: 280ms;
+  --motion-ease: cubic-bezier(.2,.9,.2,1);
+  --reduced-motion-duration: 0ms;
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--accent);
   text-decoration: inherit;
 }
 a:hover {
@@ -24,10 +37,14 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+
+  font-family: var(--font-sans);
+  font-weight: 400;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 h1 {
@@ -47,13 +64,182 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--accent);
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* ---------------- Header + positioning fix ---------------- */
+
+/* Make header a positioned container. Use sticky for page stickiness
+   but also ensure the header is a positioning context (sticky counts as positioned).
+*/
+.site-header {
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: center; /* center layout baseline */
+  padding: 0 1rem;
+  gap: 1rem;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+
+  /* positioned so absolutely-positioned children anchor to it */
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  /* ensure layout doesn't collapse if nothing else inside */
+}
+
+/* Center the site title absolutely so it's visually centered regardless
+   of other header children. This is the reliable way to keep it centered. */
+.site-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-align: center;
+  margin: 0;
+  pointer-events: none; /* title doesn't capture clicks (optional) */
+  z-index: 65;
+}
+
+/* Place hamburger at the right corner, vertically centered. */
+.hamburger {
+  width: 40px;
+  height: 40px;
+  /* display: inline-flex;
+  align-items: center;
+  justify-content: center; */
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+
+  position: absolute;
+  right: -649px;             /* distance from the right edge */
+  top: 50%;
+  transform: translateY(-50%); /* vertical centering */
+  z-index: 70; 
+}
+.hamburger:focus {
+  outline: 3px solid rgba(100,108,255,0.15);
+  border-radius: 6px;
+}
+
+/* hamburger bars */
+ .hamburger .bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  margin: 3px 0;
+  transform-origin: center;
+  transition: transform var(--motion-duration) var(--motion-ease), opacity var(--motion-duration) var(--motion-ease);
+} 
+.hamburger[aria-expanded="true"] .bar:nth-child(1) {
+  transform: translateY(5px) rotate(45deg);
+}
+.hamburger[aria-expanded="true"] .bar:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0.8);
+}
+.hamburger[aria-expanded="true"] .bar:nth-child(3) {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+/* mobile menu / backdrop (unchanged) */
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 85%;
+  max-width: 320px;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.12);
+  transform: translateX(100%);
+  transition: transform var(--motion-duration) var(--motion-ease);
+  padding: 1.25rem;
+  z-index: 80;
+  will-change: transform;
+}
+body.nav-open .mobile-menu {
+  transform: translateX(0);
+}
+
+.mobile-menu .mobile-menu-header,
+.mobile-menu .close-hint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.mobile-menu nav a {
+  display: block;
+  padding: 0.6rem 0;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-duration) var(--motion-ease);
+  z-index: 70;
+}
+body.nav-open .menu-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* center-line */
+.center-line {
+  text-align: center;
+  margin: 3rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text);
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration: var(--reduced-motion-duration);
+  }
+
+  .hamburger .bar,
+  .mobile-menu,
+  .menu-backdrop {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .mobile-menu {
+    transform: none !important;
+    right: -320px;
+  }
+  body.nav-open .mobile-menu {
+    right: 0 !important;
+  }
+
+  .menu-backdrop {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* color-scheme overrides */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

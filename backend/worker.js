@@ -1,98 +1,93 @@
-// src/worker.js
-// Real Playwright + axe-core accessibility worker
-
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { chromium } from "playwright";
-import axeSource from "axe-core"; // loads axe-core script
+import axeSource from "axe-core";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Paths
-const STORAGE_DIR = path.join(__dirname, "../storage");
+const STORAGE_DIR = path.join(__dirname, "storage");
 const SCANS_FILE = path.join(STORAGE_DIR, "scans.json");
 
-// Helper: read scans.json
+/* ---------------- HELPERS ---------------- */
+
 async function readScans() {
-  const raw = await fs.readFile(SCANS_FILE, "utf8");
-  return JSON.parse(raw || "{}");
+  try {
+    const raw = await fs.readFile(SCANS_FILE, "utf8");
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
 
-// Helper: write scans.json
-async function writeScans(data) {
-  await fs.writeFile(SCANS_FILE, JSON.stringify(data, null, 2));
+async function writeScans(scans) {
+  await fs.writeFile(SCANS_FILE, JSON.stringify(scans, null, 2));
 }
 
-async function processScan(scanId, scan) {
-  console.log(`🔍 Processing scan: ${scanId}`);
+/* ---------------- SCAN PROCESS ---------------- */
 
-  const browser = await chromium.launch({
-    headless: true
-  });
+async function processScan(scan) {
+  console.log(`🔍 Processing scan: ${scan.id}`);
 
+  const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
 
-  // Mark scan as running
   scan.status = "running";
   scan.startedAt = new Date().toISOString();
 
   const startTime = Date.now();
 
   try {
-    // Navigate
     await page.goto(scan.url, {
       waitUntil: "domcontentloaded",
       timeout: 30000
     });
 
-    // Inject axe-core script
     await page.addScriptTag({
       content: axeSource.source
     });
 
-    // Run axe scan inside the browser
     const results = await page.evaluate(async () => {
       return await axe.run();
     });
 
-    // Create folder for artifacts
-    const scanDir = path.join(STORAGE_DIR, scanId);
+    const scanDir = path.join(STORAGE_DIR, scan.id);
     await fs.mkdir(scanDir, { recursive: true });
 
-    // Write JSON report
-    const reportPath = path.join(scanDir, "report.json");
-    await fs.writeFile(reportPath, JSON.stringify(results, null, 2));
+    await fs.writeFile(
+      path.join(scanDir, "report.json"),
+      JSON.stringify(results, null, 2)
+    );
 
-    // Screenshot
-    const screenshotPath = path.join(scanDir, "screenshot.png");
-    await page.screenshot({ path: screenshotPath, fullPage: true });
+    await page.screenshot({
+      path: path.join(scanDir, "screenshot.png"),
+      fullPage: true
+    });
 
-    // Build summary
-    const summary = {
+    scan.summary = {
       violations: results.violations.length,
       passes: results.passes.length,
       incomplete: results.incomplete.length
     };
 
-    // Update DB record
+    scan.artifacts = {
+      report: `/storage/${scan.id}/report.json`,
+      screenshot: `/storage/${scan.id}/screenshot.png`
+    };
+
     scan.status = "complete";
     scan.finishedAt = new Date().toISOString();
     scan.durationMs = Date.now() - startTime;
-    scan.summary = summary;
 
-    scan.artifacts = {
-      json: `/storage/${scanId}/report.json`,
-      screenshot: `/storage/${scanId}/screenshot.png`
-    };
-
-    console.log(`✅ Scan complete: ${scanId}`);
+    console.log(`✅ Scan completed: ${scan.id}`);
   } catch (err) {
-    console.error(`❌ Worker error for ${scanId}:`, err);
     scan.status = "failed";
     scan.error = err.message;
+    console.error(`❌ Scan failed (${scan.id}):`, err.message);
   } finally {
     await browser.close();
   }
@@ -100,33 +95,25 @@ async function processScan(scanId, scan) {
   return scan;
 }
 
+/* ---------------- WORKER LOOP ---------------- */
+
 async function workerLoop() {
-  console.log("🔁 Worker started. Scanning for queued jobs...");
+  console.log("🧵 Worker started...");
 
   while (true) {
     try {
-      let scans = await readScans();
+      const scans = await readScans();
+      const queuedScan = scans.find(s => s.status === "queued");
 
-      // Find queued job
-      const entries = Object.entries(scans);
-      const queued = entries.find(([id, scan]) => scan.status === "queued");
-
-      if (queued) {
-        const [scanId, scan] = queued;
-
-        // Process scan
-        const updatedScan = await processScan(scanId, scan);
-
-        // Save updated DB
-        scans[scanId] = updatedScan;
+      if (queuedScan) {
+        await processScan(queuedScan);
         await writeScans(scans);
       }
 
-      // Worker checks every 3 seconds
-      await new Promise((r) => setTimeout(r, 3000));
+      await new Promise(r => setTimeout(r, 3000));
     } catch (err) {
       console.error("Worker loop error:", err);
-    }
+    }  
   }
 }
 

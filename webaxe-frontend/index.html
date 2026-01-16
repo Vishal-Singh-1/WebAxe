@@ -7,7 +7,50 @@
     <title>webaxe-frontend</title>
   </head>
   <body>
+    <!-- Header with hamburger -->
+    <header class="site-header" role="banner">
+
+      <!-- Hamburger button (aria attributes included) -->
+      <button
+        id="hamburger-btn"
+        class="hamburger"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
+      </button>
+    </header>
+
+    <!-- Backdrop -->
+    <div id="menu-backdrop" class="menu-backdrop" aria-hidden="true"></div>
+
+    <!-- Mobile menu structure -->
+    <aside id="mobile-menu" class="mobile-menu" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="mobile-menu-header">
+        <strong>Menu</strong>
+        <button id="mobile-close" aria-label="Close menu">✕</button>
+      </div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/features">Features</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </aside>
+
+    
+
     <div id="root"></div>
+
+    <!-- App entry (Vite will load React entry) -->
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Hamburger behavior script: ensure this file exists at src/hamburger.js
+         (or change the path to match your script). This script toggles body.nav-open
+         and aria attributes; it also traps focus when menu is open. -->
+    <script src="\src\hamburger.js"></script>
   </body>
 </html>

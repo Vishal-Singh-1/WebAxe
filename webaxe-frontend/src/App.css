@@ -1,8 +1,10 @@
 .app-container {
   font-family: Arial, sans-serif;
-  color: #1a1a1a;
+  color: #2a2929;
 }
-
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
 .header {
   border-bottom: 1px solid #e5e5e5;
   padding: 16px 0;
@@ -45,7 +47,7 @@
 
 .nav-links a {
   text-decoration: none;
-  color: #444;
+  color: #3a3a3a;
   font-size: 15px;
 }
 
