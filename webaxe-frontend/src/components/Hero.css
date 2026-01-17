@@ -7,22 +7,24 @@
 
 .hero-badge {
   display: inline-block;
-  background: #ebeeff;
-  color: #4b57ff;
+  background: #915872;
+  color: #fadcd5;
   padding: 6px 14px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 700;
   margin-bottom: 15px;
 }
 
 .hero-title {
   font-size: 40px;
+  color:#765d67 ;
   font-weight: 800;
   line-height: 1.2;
 }
 
 .highlight {
-  color: #4b57ff;
+  color:#2d222f ;
   display: block;
   margin-top: 5px;
 }
@@ -52,15 +54,19 @@
 
 .scan-btn {
   padding: 12px 20px;
-  background: #4b57ff;
-  color: white;
+  width: 12em;
+  background: #1b0c1a;
+  color: #fadcd5;
   border: none;
+  font-size: 1em;
+  font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
 }
 
 .msg {
   margin-top: 20px;
-  color: #4b57ff;
-  font-size: 15px;
+  color: #6d3c52;
+  font-size: 1em;
+  font-weight: 580;
 }

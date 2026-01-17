@@ -1,14 +1,26 @@
 .app-container {
   font-family: Arial, sans-serif;
-  color: #2a2929;
+  color: #4b2138;
+  
 }
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 .header {
-  border-bottom: 1px solid #e5e5e5;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 30px;
+
+  background-color: #c9c0bf65 ;/* light gray glass */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(10px);
+
   padding: 16px 0;
+  z-index: 1000;
 }
+
 
 .header-inner {
   max-width: 1200px;
@@ -28,43 +40,108 @@
 }
 
 .logo-icon {
-  background: #e8eaff;
-  color: #4b57ff;
+  background: #1b0c1a;
+  color: #fadcd5;
   width: 36px;
   height: 36px;
   display: flex;
+  padding: 1px;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  font-weight: bold;
+  font-weight: 500;
 }
-
+#app-name{
+  font-size: 1.5em;
+  color: #4b2138;
+  font-weight: 600;
+}
 .nav-links {
   display: flex;
   gap: 20px;
+ 
   align-items: center;
 }
 
 .nav-links a {
   text-decoration: none;
-  color: #3a3a3a;
-  font-size: 15px;
+  color: #4b2138;
+  font-size: 1.3em;
+  font-weight: 550;
 }
 
 .get-started {
   padding: 8px 16px;
-  background: #4b57ff;
-  color: white;
+  background: #1b0c1a;
+  color: #fadcd5;
   border: none;
+  font-size: 1em;
   border-radius: 6px;
   cursor: pointer;
 }
 
 .footer {
-  margin-top: 40px;
+  margin-top: 20px;
   padding: 20px;
   text-align: center;
-  font-size: 14px;
-  color: #555;
-  border-top: 1px solid #eee;
+  font-size: 1em;
+  color: #1b0c1a;
+ 
+}
+main {
+  padding-top: 30px; /* same as header height */
+}
+
+#about {
+background-color: #a57485;
+  max-width: 900px;
+  border-radius: 10px;
+  margin: 0 auto;
+  padding: 0.1em 4em;
+  text-align: center;
+}
+
+#about h2 {
+  font-size: 2.5em;
+  margin-bottom: 0.5em;
+  color: #1b0c1a;
+}
+
+#about p {
+  font-size: 1.2em;
+  font-weight: 500;
+  line-height: 1.7;
+  color: #fadcd5;
+  margin-bottom: 1em;
+}
+#how-it-works {
+  background-color: #a57485;
+  border-radius: 10px;
+padding: 0.1em 4em;
+  max-width: 900px;
+  margin: 0 auto;
+  margin-top: 2em;
+  text-align: center;
+}
+
+#how-it-works h2 {
+ font-size: 2.5em;
+  margin-bottom: 0.5em;
+  color: #1b0c1a;}
+
+#how-it-works ol {
+ text-align: center;
+  list-style-position: inside;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 1em;
+}
+
+#how-it-works li {
+   font-size: 1.2em;
+  font-weight: 400;
+  line-height: 1.7;
+   color: #fadcd5;
+  margin-bottom: 0.5em;
+
 }

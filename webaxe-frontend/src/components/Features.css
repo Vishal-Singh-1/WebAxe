@@ -11,16 +11,16 @@
   border: 1px solid #e6e6e6;
   padding: 20px;
   border-radius: 10px;
-  background: white;
+  background: whitesmoke;
 }
 
 .feature-card h3 {
-  color: #4b57ff;
+  color: #4b2138;
   margin-bottom: 10px;
   font-size: 18px;
 }
 
 .feature-card p {
-  color: #555;
+  color: #2d222f;
   font-size: 14px;
 }

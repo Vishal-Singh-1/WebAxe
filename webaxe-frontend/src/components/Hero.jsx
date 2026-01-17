@@ -52,6 +52,7 @@ export default function Hero({ onScan }) {
       </form>
 
       {msg && <div className="msg">{msg}</div>}
+      
     </section>
   );
 }
