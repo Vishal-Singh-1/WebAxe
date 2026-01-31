@@ -1,0 +1,129 @@
+[
+  {
+    "id": "test-2-w3",
+    "url": "https://www.w3.org",
+    "status": "complete",
+    "phase": "done",
+    "startedAt": "2026-01-22T17:45:39.225Z",
+    "summary": {
+      "violations": 0,
+      "passes": 43,
+      "incomplete": 1
+    },
+    "artifacts": {
+      "report": "/storage/test-2-w3/report.json",
+      "screenshot": "/storage/test-2-w3/screenshot.png"
+    },
+    "finishedAt": "2026-01-22T17:45:40.472Z",
+    "durationMs": 1245,
+    "error": null,
+    "errorType": null,
+    "userMessage": null
+  },
+  {
+    "id": "test-4-gov",
+    "url": "https://www.usa.gov",
+    "status": "complete",
+    "phase": "done",
+    "startedAt": "2026-01-17T14:52:35.350Z",
+    "summary": {
+      "violations": 3,
+      "passes": 44,
+      "incomplete": 1
+    },
+    "artifacts": {
+      "report": "/storage/test-4-gov/report.json",
+      "screenshot": "/storage/test-4-gov/screenshot.png"
+    },
+    "finishedAt": "2026-01-17T14:52:39.779Z",
+    "durationMs": 4427
+  },
+  {
+    "id": "test-5-bbc",
+    "url": "https://www.bbc.com",
+    "status": "complete",
+    "phase": "done",
+    "startedAt": "2026-01-17T14:52:43.469Z",
+    "summary": {
+      "violations": 3,
+      "passes": 41,
+      "incomplete": 1
+    },
+    "artifacts": {
+      "report": "/storage/test-5-bbc/report.json",
+      "screenshot": "/storage/test-5-bbc/screenshot.png"
+    },
+    "finishedAt": "2026-01-17T14:52:50.247Z",
+    "durationMs": 6776
+  },
+  {
+    "id": "dc873a31-2690-4fa3-9d8a-699b6c876ee0",
+    "url": "https://example.com",
+    "status": "complete",
+    "createdAt": "2026-01-19T05:47:23.191Z",
+    "phase": "done",
+    "startedAt": "2026-01-22T17:45:44.166Z",
+    "summary": {
+      "violations": 2,
+      "passes": 13,
+      "incomplete": 0
+    },
+    "artifacts": {
+      "report": "/storage/dc873a31-2690-4fa3-9d8a-699b6c876ee0/report.json",
+      "screenshot": "/storage/dc873a31-2690-4fa3-9d8a-699b6c876ee0/screenshot.png"
+    },
+    "finishedAt": "2026-01-22T17:45:44.756Z",
+    "durationMs": 588
+  },
+  {
+    "id": "629d8a7b-8b3b-46c4-a283-2a0c8df5a109",
+    "url": "https://google.com",
+    "status": "complete",
+    "phase": "done",
+    "createdAt": "2026-01-22T17:49:50.018Z",
+    "startedAt": "2026-01-22T17:53:00.060Z",
+    "summary": {
+      "violations": 4,
+      "passes": 31,
+      "incomplete": 2
+    },
+    "artifacts": {
+      "report": "/storage/629d8a7b-8b3b-46c4-a283-2a0c8df5a109/report.json",
+      "screenshot": "/storage/629d8a7b-8b3b-46c4-a283-2a0c8df5a109/screenshot.png"
+    },
+    "finishedAt": "2026-01-22T17:53:01.802Z",
+    "durationMs": 1738
+  },
+  {
+    "id": "babb1e8f-81a1-493d-b774-a2654c3563b3",
+    "url": "https://chatgpt.com",
+    "status": "complete",
+    "phase": "done",
+    "createdAt": "2026-01-22T17:53:27.322Z",
+    "startedAt": "2026-01-22T17:53:29.607Z",
+    "summary": {
+      "violations": 3,
+      "passes": 14,
+      "incomplete": 0
+    },
+    "artifacts": {
+      "report": "/storage/babb1e8f-81a1-493d-b774-a2654c3563b3/report.json",
+      "screenshot": "/storage/babb1e8f-81a1-493d-b774-a2654c3563b3/screenshot.png"
+    },
+    "finishedAt": "2026-01-22T17:53:30.328Z",
+    "durationMs": 720
+  },
+  {
+    "id": "9c09050e-110b-4fba-8dba-8252c3225ce4",
+    "url": "https://www.youtube.com/",
+    "status": "failed",
+    "phase": "axe",
+    "createdAt": "2026-01-31T07:36:50.236Z",
+    "startedAt": "2026-01-31T07:36:51.952Z",
+    "error": "page.addScriptTag: TypeError: Failed to set the 'text' property on 'HTMLScriptElement': This document requires 'TrustedScript' assignment.\n    at addScriptContent (eval at evaluate (:290:30), <anonymous>:4:19)\n    at UtilityScript.evaluate (<anonymous>:292:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+    "errorType": "AXE_BLOCKED_BY_CSP",
+    "userMessage": "The website blocks accessibility scanning due to strict Content Security Policy.",
+    "finishedAt": "2026-01-31T07:36:54.376Z",
+    "durationMs": 2422
+  }
+]

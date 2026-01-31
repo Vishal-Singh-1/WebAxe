@@ -1,37 +1,34 @@
+
+import dotenv from "dotenv";
+dotenv.config(); // ✅ REQUIRED for worker process
+
+/* ---------------- IMPORTS ---------------- */
+
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { chromium } from "playwright";
 import axeSource from "axe-core";
 
+import connectDB from "./config/db.js";
+import Scan from "./models/scan.js";
+import { startHeartbeat } from "./worker/heartbeat.js";
+
+/* ---------------- INIT ---------------- */
+
+startHeartbeat();
+await connectDB();
+
+/* ---------------- PATHS ---------------- */
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Paths
 const STORAGE_DIR = path.join(__dirname, "storage");
-const SCANS_FILE = path.join(STORAGE_DIR, "scans.json");
-
-/* ---------------- HELPERS ---------------- */
-
-async function readScans() {
-  try {
-    const raw = await fs.readFile(SCANS_FILE, "utf8");
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-}
-
-async function writeScans(scans) {
-  await fs.mkdir(STORAGE_DIR, { recursive: true });
-  await fs.writeFile(SCANS_FILE, JSON.stringify(scans, null, 2));
-}
 
 /* ---------------- ERROR CLASSIFIER ---------------- */
 
 function classifyError(message = "") {
-  // ❌ INVALID URL / DNS
   if (message.includes("ERR_NAME_NOT_RESOLVED")) {
     return {
       phase: "navigation",
@@ -40,7 +37,6 @@ function classifyError(message = "") {
     };
   }
 
-  // ❌ SITE DOWN
   if (message.includes("ERR_CONNECTION_REFUSED")) {
     return {
       phase: "navigation",
@@ -49,7 +45,6 @@ function classifyError(message = "") {
     };
   }
 
-  // ❌ TIMEOUT
   if (message.includes("ERR_TIMED_OUT") || message.includes("Timeout")) {
     return {
       phase: "navigation",
@@ -58,7 +53,6 @@ function classifyError(message = "") {
     };
   }
 
-  // ❌ ACCESS DENIED
   if (message.includes("403") || message.includes("401")) {
     return {
       phase: "navigation",
@@ -67,7 +61,6 @@ function classifyError(message = "") {
     };
   }
 
-  // ❌ AXE BLOCKED BY CSP (IMPORTANT FIX)
   if (
     message.includes("Content Security Policy") ||
     message.includes("page.addScriptTag")
@@ -80,7 +73,6 @@ function classifyError(message = "") {
     };
   }
 
-  // ❓ UNKNOWN
   return {
     phase: "unknown",
     errorType: "UNKNOWN",
@@ -90,8 +82,8 @@ function classifyError(message = "") {
 
 /* ---------------- SCAN PROCESS ---------------- */
 
-async function processScan(scan, scans) {
-  console.log(`🔍 Processing scan: ${scan.id}`);
+async function processScan(scan) {
+  console.log(`🔍 Processing scan: ${scan.scanId}`);
 
   const browser = await chromium.launch({
     channel: "chrome",
@@ -101,13 +93,17 @@ async function processScan(scan, scans) {
   const context = await browser.newContext();
   const page = await context.newPage();
 
-  // ▶ RUNNING STATE
-  scan.status = "running";
-  scan.phase = "navigation";
-  scan.startedAt = new Date().toISOString();
-  await writeScans(scans);
-
   const startTime = Date.now();
+
+  // ▶ mark as running
+  await Scan.findOneAndUpdate(
+    { scanId: scan.scanId },
+    {
+      status: "running",
+      phase: "navigation",
+      "timings.startedAt": new Date()
+    }
+  );
 
   try {
     /* ---------- NAVIGATION ---------- */
@@ -117,18 +113,18 @@ async function processScan(scan, scans) {
     });
 
     /* ---------- AXE SCAN ---------- */
-    scan.phase = "axe";
-    await writeScans(scans);
+    await Scan.findOneAndUpdate(
+      { scanId: scan.scanId },
+      { phase: "axe" }
+    );
 
-    await page.addScriptTag({
-      content: axeSource.source
-    });
+    await page.addScriptTag({ content: axeSource.source });
 
     const results = await page.evaluate(async () => {
       return await axe.run();
     });
 
-    const scanDir = path.join(STORAGE_DIR, scan.id);
+    const scanDir = path.join(STORAGE_DIR, scan.scanId);
     await fs.mkdir(scanDir, { recursive: true });
 
     await fs.writeFile(
@@ -141,41 +137,46 @@ async function processScan(scan, scans) {
       fullPage: true
     });
 
-    scan.summary = {
-      violations: results.violations.length,
-      passes: results.passes.length,
-      incomplete: results.incomplete.length
-    };
+    await Scan.findOneAndUpdate(
+      { scanId: scan.scanId },
+      {
+        status: "completed",
+        phase: "done",
+        artifacts: {
+          reportPath: `/storage/${scan.scanId}/report.json`,
+          screenshotPath: `/storage/${scan.scanId}/screenshot.png`
+        },
+        summary: {
+          violations: results.violations.length,
+          passes: results.passes.length,
+          incomplete: results.incomplete.length
+        },
+        "timings.finishedAt": new Date(),
+        "timings.durationMs": Date.now() - startTime
+      }
+    );
 
-    scan.artifacts = {
-      report: `/storage/${scan.id}/report.json`,
-      screenshot: `/storage/${scan.id}/screenshot.png`
-    };
-
-    scan.status = "complete";
-    scan.phase = "done";
-    scan.finishedAt = new Date().toISOString();
-    scan.durationMs = Date.now() - startTime;
-
-    console.log(`✅ Scan completed: ${scan.id}`);
+    console.log(`✅ Scan completed: ${scan.scanId}`);
   } catch (err) {
     const classified = classifyError(err.message);
 
-    scan.status = "failed";
-    scan.phase = classified.phase;
-    scan.error = err.message;
-    scan.errorType = classified.errorType;
-    scan.userMessage = classified.userMessage;
-    scan.finishedAt = new Date().toISOString();
-    scan.durationMs = Date.now() - startTime;
+    await Scan.findOneAndUpdate(
+      { scanId: scan.scanId },
+      {
+        status: "failed",
+        phase: classified.phase,
+        errorType: classified.errorType,
+        userMessage: classified.userMessage,
+        error: err.message,
+        "timings.finishedAt": new Date(),
+        "timings.durationMs": Date.now() - startTime
+      }
+    );
 
-    console.error(`❌ Scan failed (${scan.id}):`, err.message);
+    console.error(`❌ Scan failed (${scan.scanId}):`, err.message);
   } finally {
     await browser.close();
-    await writeScans(scans); // ✅ FINAL SAVE
   }
-
-  return scan;
 }
 
 /* ---------------- WORKER LOOP ---------------- */
@@ -185,11 +186,12 @@ async function workerLoop() {
 
   while (true) {
     try {
-      const scans = await readScans();
-      const queuedScan = scans.find(s => s.status === "queued");
+      const scan = await Scan.findOne({ status: "queued" }).sort({
+        "timings.createdAt": 1
+      });
 
-      if (queuedScan) {
-        await processScan(queuedScan, scans);
+      if (scan) {
+        await processScan(scan);
       }
 
       await new Promise(r => setTimeout(r, 3000));
