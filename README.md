@@ -1,41 +1,78 @@
 # WebAxe
 
-**WebAxe** — lightweight accessibility scanner for websites.  
-Runs real browser-based scans (Playwright + `axe-core`), captures reports and screenshots, and provides a simple web UI for running and viewing results.
+**WebAxe** — a lightweight, real-browser accessibility scanner for websites.  
+Runs Playwright + `axe-core` in a background worker, stores scan metadata in MongoDB, and captures reports & screenshots for inspection via a simple web UI.
 
-> Fast demo-ready MVP for placements & portfolio. Built with a small team — backend (Node/Express + Playwright) and frontend (React).
+> Built as a **portfolio-grade system** demonstrating backend architecture (API + worker + DB) with a React frontend.
 
 ---
 
 ## Demo / Quick links
-- Backend API: `http://localhost:4000`  
-- Frontend (dev): `http://localhost:5173` (Vite)  
-- Health: `GET /api/health` → `{ status: "ok" }`
+- Backend API: `http://localhost:3000`
+- Frontend (dev): `http://localhost:5173` (Vite)
+- Health check: `GET /` → `{ status: "WebAxe backend running" }`
 
 ---
 
-## Features (MVP)
-- Scan a single URL using a headless browser
-- Inject `axe-core` and run accessibility checks
-- Save full `axe` JSON report + screenshot per scan
-- Simple REST API: create scan, query status, download artifacts
-- Frontend landing page + scan trigger (React)
+## What WebAxe does
+1. Frontend submits a website URL
+2. Backend queues a scan in MongoDB
+3. Worker process:
+   - launches a real Chromium browser
+   - injects `axe-core`
+   - runs accessibility checks
+   - captures full report + screenshot
+4. Results are persisted and available via API
 
-### Stretch / future
-- Auth & user scan history
-- Multi-page / full-site scan
-- PDF export & shareable report links
-- CI integration (GitHub Actions) to run scans on PRs
+---
+
+## Features (current)
+- Real browser-based accessibility scans (Playwright + `axe-core`)
+- Background worker architecture (separate from API)
+- MongoDB-backed scan queue & lifecycle tracking
+- Scan states: `queued → running → completed / failed`
+- Error classification (timeouts, CSP blocks, invalid URLs, etc.)
+- Stores:
+  - full `axe` JSON report
+  - full-page screenshot
+- REST API to:
+  - create scans
+  - fetch scan history
+  - fetch scan status
+  - re-run scans
+- Frontend UI to trigger scans (React)
+
+---
+
+## Architecture overview
+
+Frontend (React)
+|
+v
+Backend API (Express)
+|
+v
+MongoDB (scan metadata, status, timings)
+|
+v
+Worker (Playwright + axe-core)
+|
+v
+Local / Cloud Storage (reports & screenshots)
+
+
+- **MongoDB** stores only metadata (JSON, small & queryable)
+- **Filesystem / object storage** stores heavy artifacts
+- Worker and API run as **separate Node processes**
 
 ---
 
 ## Tech stack
-- Frontend: React (Vite), plain CSS (no Tailwind required)
-- Backend: Node.js + Express
-- Browser automation: Playwright (Chromium) + `axe-core`
-- Storage: Local filesystem for artifacts (MVP). S3 / R2 for production.
-- Persistence: `storage/scans.json` (simple file) — replace with Mongo/Postgres later
-
----
-
-## Repo layout
+- **Frontend:** React (Vite), plain CSS
+- **Backend:** Node.js, Express
+- **Worker:** Playwright (Chromium)
+- **Accessibility engine:** `axe-core`
+- **Database:** MongoDB (Mongoose)
+- **Artifacts:** Local filesystem (MVP)  
+  → S3 / Cloudflare R2 recommended for production
+- **Dev tools:** MongoDB Compass / VS Code MongoDB extension
