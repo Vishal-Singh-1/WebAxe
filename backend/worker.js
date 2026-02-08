@@ -1,12 +1,18 @@
-
+/* ================== ENV ================== */
 import dotenv from "dotenv";
-dotenv.config(); // ✅ REQUIRED for worker process
-
-/* ---------------- IMPORTS ---------------- */
-
-import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+
+/* Resolve __dirname once (ESM safe) */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/* Load .env explicitly */
+dotenv.config({ path: path.join(__dirname, ".env") });
+
+/* ================= IMPORTS ================= */
+
+import fs from "fs/promises";
 import { chromium } from "playwright";
 import axeSource from "axe-core";
 
@@ -14,19 +20,64 @@ import connectDB from "./config/db.js";
 import Scan from "./models/scan.js";
 import { startHeartbeat } from "./worker/heartbeat.js";
 
-/* ---------------- INIT ---------------- */
+/* ================= INIT ================= */
 
 startHeartbeat();
 await connectDB();
 
-/* ---------------- PATHS ---------------- */
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+/* ================= PATHS ================= */
 
 const STORAGE_DIR = path.join(__dirname, "storage");
 
-/* ---------------- ERROR CLASSIFIER ---------------- */
+/* ================= SEVERITY + WCAG ================= */
+
+function mapSeverity(impact) {
+  switch (impact) {
+    case "critical":
+    case "serious":
+      return "CRITICAL";
+    case "moderate":
+      return "WARNING";
+    case "minor":
+    default:
+      return "INFO";
+  }
+}
+
+function extractWCAG(tags = []) {
+  return tags.filter(tag => tag.startsWith("wcag"));
+}
+
+function processAxeResults(results) {
+  const categorized = {
+    CRITICAL: [],
+    WARNING: [],
+    INFO: []
+  };
+
+  for (const violation of results.violations) {
+    const severity = mapSeverity(violation.impact);
+
+    categorized[severity].push({
+      ruleId: violation.id,
+      severity,
+      impact: violation.impact,
+      description: violation.description,
+      help: violation.help,
+      helpUrl: violation.helpUrl,
+      wcag: extractWCAG(violation.tags),
+      occurrences: violation.nodes.length,
+      nodes: violation.nodes.map(node => ({
+        html: node.html,
+        target: node.target
+      }))
+    });
+  }
+
+  return categorized;
+}
+
+/* ================= ERROR CLASSIFIER ================= */
 
 function classifyError(message = "") {
   if (message.includes("ERR_NAME_NOT_RESOLVED")) {
@@ -80,7 +131,7 @@ function classifyError(message = "") {
   };
 }
 
-/* ---------------- SCAN PROCESS ---------------- */
+/* ================= SCAN PROCESS ================= */
 
 async function processScan(scan) {
   console.log(`🔍 Processing scan: ${scan.scanId}`);
@@ -95,7 +146,6 @@ async function processScan(scan) {
 
   const startTime = Date.now();
 
-  // ▶ mark as running
   await Scan.findOneAndUpdate(
     { scanId: scan.scanId },
     {
@@ -112,7 +162,7 @@ async function processScan(scan) {
       timeout: 30000
     });
 
-    /* ---------- AXE SCAN ---------- */
+    /* ---------- AXE ---------- */
     await Scan.findOneAndUpdate(
       { scanId: scan.scanId },
       { phase: "axe" }
@@ -124,11 +174,25 @@ async function processScan(scan) {
       return await axe.run();
     });
 
+    /* ---------- PROCESS RESULTS ---------- */
+    const issues = processAxeResults(results);
+
+    const summary = {
+      critical: issues.CRITICAL.length,
+      warning: issues.WARNING.length,
+      info: issues.INFO.length,
+      total:
+        issues.CRITICAL.length +
+        issues.WARNING.length +
+        issues.INFO.length
+    };
+
+    /* ---------- ARTIFACTS ---------- */
     const scanDir = path.join(STORAGE_DIR, scan.scanId);
     await fs.mkdir(scanDir, { recursive: true });
 
     await fs.writeFile(
-      path.join(scanDir, "report.json"),
+      path.join(scanDir, "raw-report.json"),
       JSON.stringify(results, null, 2)
     );
 
@@ -137,19 +201,17 @@ async function processScan(scan) {
       fullPage: true
     });
 
+    /* ---------- SAVE ---------- */
     await Scan.findOneAndUpdate(
       { scanId: scan.scanId },
       {
         status: "completed",
         phase: "done",
+        issues,
+        summary,
         artifacts: {
-          reportPath: `/storage/${scan.scanId}/report.json`,
+          rawReportPath: `/storage/${scan.scanId}/raw-report.json`,
           screenshotPath: `/storage/${scan.scanId}/screenshot.png`
-        },
-        summary: {
-          violations: results.violations.length,
-          passes: results.passes.length,
-          incomplete: results.incomplete.length
         },
         "timings.finishedAt": new Date(),
         "timings.durationMs": Date.now() - startTime
@@ -179,7 +241,7 @@ async function processScan(scan) {
   }
 }
 
-/* ---------------- WORKER LOOP ---------------- */
+/* ================= WORKER LOOP ================= */
 
 async function workerLoop() {
   console.log("🧵 Worker started...");
