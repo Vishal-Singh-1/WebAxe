@@ -3,11 +3,9 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-/* Resolve __dirname once (ESM safe) */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/* Load .env explicitly */
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 /* ================= IMPORTS ================= */
@@ -20,6 +18,10 @@ import connectDB from "./config/db.js";
 import Scan from "./models/scan.js";
 import { startHeartbeat } from "./worker/heartbeat.js";
 
+
+/* 🔥 Import centralized utils */
+import { processAxeResults } from "./utils/processAxeResults.js";
+
 /* ================= INIT ================= */
 
 startHeartbeat();
@@ -28,54 +30,6 @@ await connectDB();
 /* ================= PATHS ================= */
 
 const STORAGE_DIR = path.join(__dirname, "storage");
-
-/* ================= SEVERITY + WCAG ================= */
-
-function mapSeverity(impact) {
-  switch (impact) {
-    case "critical":
-    case "serious":
-      return "CRITICAL";
-    case "moderate":
-      return "WARNING";
-    case "minor":
-    default:
-      return "INFO";
-  }
-}
-
-function extractWCAG(tags = []) {
-  return tags.filter(tag => tag.startsWith("wcag"));
-}
-
-function processAxeResults(results) {
-  const categorized = {
-    CRITICAL: [],
-    WARNING: [],
-    INFO: []
-  };
-
-  for (const violation of results.violations) {
-    const severity = mapSeverity(violation.impact);
-
-    categorized[severity].push({
-      ruleId: violation.id,
-      severity,
-      impact: violation.impact,
-      description: violation.description,
-      help: violation.help,
-      helpUrl: violation.helpUrl,
-      wcag: extractWCAG(violation.tags),
-      occurrences: violation.nodes.length,
-      nodes: violation.nodes.map(node => ({
-        html: node.html,
-        target: node.target
-      }))
-    });
-  }
-
-  return categorized;
-}
 
 /* ================= ERROR CLASSIFIER ================= */
 
@@ -174,7 +128,7 @@ async function processScan(scan) {
       return await axe.run();
     });
 
-    /* ---------- PROCESS RESULTS ---------- */
+    /* ---------- PROCESS RESULTS (USING UTILS) ---------- */
     const issues = processAxeResults(results);
 
     const summary = {

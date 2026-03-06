@@ -1,28 +1,38 @@
-const { mapSeverity } = require("./severityMapper");
-const { extractWCAG } = require("./wcagMapper");
+import { mapSeverity } from "./severityMapper.js";
+import { extractWCAG } from "./wcagMapper.js";
 
-function processAxeResults(axeResults) {
+export function processAxeResults(axeResults) {
   const categorized = {
     CRITICAL: [],
     WARNING: [],
     INFO: []
   };
 
+  if (!axeResults || !axeResults.violations) {
+    return categorized;
+  }
+
   axeResults.violations.forEach((violation) => {
-    const severity = mapSeverity(violation.impact);
+    const rawImpact = violation.impact || "minor";
+    const impact = rawImpact.toLowerCase();
+
+    const severity = mapSeverity(impact);
 
     const issue = {
       ruleId: violation.id,
       severity,
-      impact: violation.impact,
-      description: violation.description,
-      help: violation.help,
-      helpUrl: violation.helpUrl,
-      wcag: extractWCAG(violation.tags),
-      occurrences: violation.nodes.length,
-      nodes: violation.nodes.map(node => ({
-        html: node.html,
-        target: node.target
+      impact,
+      description: violation.description || null,
+      help: violation.help || null,
+      helpUrl: violation.helpUrl || null,
+
+      wcag: extractWCAG(violation.tags || []),
+
+      occurrences: violation.nodes?.length || 0,
+
+      nodes: (violation.nodes || []).map((node) => ({
+        html: node.html || null,
+        target: node.target || []
       }))
     };
 
@@ -31,5 +41,3 @@ function processAxeResults(axeResults) {
 
   return categorized;
 }
-
-module.exports = { processAxeResults };

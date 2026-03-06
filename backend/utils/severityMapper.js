@@ -1,5 +1,9 @@
-function mapSeverity(impact) {
-  switch (impact) {
+export function mapSeverity(impact) {
+  if (!impact) return "INFO";
+
+  const normalized = impact.toLowerCase();
+
+  switch (normalized) {
     case "critical":
     case "serious":
       return "CRITICAL";
@@ -12,5 +16,3 @@ function mapSeverity(impact) {
       return "INFO";
   }
 }
-
-module.exports = { mapSeverity };

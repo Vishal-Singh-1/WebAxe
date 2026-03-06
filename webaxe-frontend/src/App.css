@@ -18,7 +18,7 @@
   -webkit-backdrop-filter: blur(10px);
 
   padding: 16px 0;
-  z-index: 1000;
+  z-index: 5000;
 }
 
 
@@ -144,4 +144,136 @@ padding: 0.1em 4em;
    color: #fadcd5;
   margin-bottom: 0.5em;
 
+}
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.hamburger span {
+  width: 22px;
+  height: 2px;
+  background: #1b0c1a;
+  transition: 0.3s;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(4px, 4px);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(4px, -4px);
+}
+.menu-panel {
+  position: fixed;
+  top: 0;
+  right: -30%;
+  width: 15%;
+  min-width: 200px;
+  height: 100%;
+  background: #1b0c1a;
+
+ background-color: #1b0c1ae7;
+  backdrop-filter: blur(10px);
+
+
+
+  padding: 90px 32px;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+
+  /* 🔑 KEY FIX */
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: right 0.4s ease, visibility 0.4s ease;
+  z-index: 5500;
+}
+.menu-panel a{
+  text-decoration: none;
+  color:#fadcd5;
+  font-size: 1.7em;
+  font-weight:600 ;
+ margin-bottom: 0.6em;
+}
+/* When menu is open */
+.menu-panel.open {
+  right: 0;
+  visibility: visible;
+  pointer-events: auto;
+}.menu-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 1.8em;
+  color: #fadcd5;
+  cursor: pointer;
+}
+
+
+/* =========================
+   Full Screen Scan Page
+========================= */
+#scan {
+  position: fixed;        /* take it out of normal flow */
+  top: 0;
+  left: 0;
+
+  width: 100%;           /* full screen width */
+  height: 100%;          /* full screen height */
+
+  background-color: #fde3dc; /* same theme background */
+  z-index: 4000;          /* higher than header (1000) */
+
+  padding: 80px 40px;     /* spacing inside page */
+  box-sizing: border-box;
+
+  overflow-y: auto;       /* scroll only scan page */
+}
+
+/* Optional: improve text look */
+#scan h1 {
+  font-size: 2.4em;
+  margin-bottom: 0.4em;
+  color: #4b2138;
+}
+
+#scan p {
+  font-size: 1.1em;
+  margin-bottom: 1em;
+}
+
+/* Back link style */
+#scan a {
+  font-weight: 600;
+  color: #1b0c1a;
+  font-size: 2em;
+  text-decoration: none;
+}
+
+#scan a:hover {
+  text-decoration: underline;
 }

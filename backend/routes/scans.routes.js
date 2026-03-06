@@ -2,8 +2,7 @@ import express from "express";
 import { randomUUID } from "crypto";
 import Scan from "../models/scan.js";
 import { cleanupScan } from "../utils/cleanupScan.js";
-
-console.log("🔥 POST /api/scans HIT");
+import buildCombinedReport from "../utils/buildCombinedReport.js";
 
 const router = express.Router();
 
@@ -38,8 +37,6 @@ router.post("/scans", async (req, res) => {
       createdAt: new Date()
     }
   });
-  console.log("✅ Scan inserted into MongoDB");
-
 
   res.json({
     message: "Scan queued successfully",
@@ -54,7 +51,7 @@ router.get("/scans", async (req, res) => {
     "timings.createdAt": -1
   });
 
-  res.json({ scans });
+  res.json({ scans });   // ✅ fixed variable name
 });
 
 /* ---------------- GET SCAN BY ID ---------------- */
@@ -66,7 +63,10 @@ router.get("/scans/:id", async (req, res) => {
     return res.status(404).json({ error: "Scan not found" });
   }
 
-  res.json({ scan });
+  // 🔥 THIS IS THE IMPORTANT CHANGE
+  const formattedReport = buildCombinedReport(scan);
+
+  res.json(formattedReport);   // return formatted dashboard report
 });
 
 /* ---------------- SCAN STATUS ---------------- */
@@ -98,7 +98,6 @@ router.post("/scans/:id/rerun", async (req, res) => {
     return res.status(409).json({ error: "Scan already running" });
   }
 
-  // delete old artifacts from disk
   await cleanupScan(scan.scanId);
 
   await Scan.findOneAndUpdate(
@@ -106,7 +105,13 @@ router.post("/scans/:id/rerun", async (req, res) => {
     {
       status: "queued",
       phase: "waiting",
-      summary: null,
+      summary: {
+        critical: 0,
+        warning: 0,
+        info: 0,
+        total: 0
+      },
+      issues: {},
       artifacts: null,
       error: null,
       errorType: null,

@@ -6,9 +6,8 @@ export default function Hero({ onScan }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  const handleScan = async (e) => {
+  const handleScan = (e) => {
     e.preventDefault();
-
     if (!url.trim()) {
       setMsg("Please enter a valid URL.");
       return;
@@ -17,31 +16,21 @@ export default function Hero({ onScan }) {
     setLoading(true);
     setMsg("");
 
-    try {
-      const res = await fetch("http://localhost:3000/api/scans", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ url })
-      });
+    // Replace with real backend API call
+   setTimeout(() => {
+  setLoading(false);
+  onScan(url);
 
-      const data = await res.json();
+  // store scanned URL for ScanResults page
+  localStorage.setItem("scannedUrl", url);
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to queue scan");
-      }
+  // optional message (won't be seen because page changes)
+  setMsg("Demo scan completed. Connect backend later.");
 
-      // Notify parent (for footer display etc.)
-      onScan(url);
+  // go to scan page (simple navigation)
+  window.location.href = "/scan";
+}, 1000);
 
-      setMsg("Scan queued successfully 🚀");
-      setUrl("");
-    } catch (error) {
-      setMsg(error.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -64,7 +53,6 @@ export default function Hero({ onScan }) {
           className="url-input"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          disabled={loading}
         />
 
         <button className="scan-btn" type="submit" disabled={loading}>
@@ -73,6 +61,7 @@ export default function Hero({ onScan }) {
       </form>
 
       {msg && <div className="msg">{msg}</div>}
+      
     </section>
   );
 }

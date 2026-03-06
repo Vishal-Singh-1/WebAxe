@@ -1,0 +1,279 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #f3f2f7;
+}
+
+.dashboard {
+  padding: 30px;
+}
+
+.header h2 {
+  margin-bottom: 20px;
+}
+/* Cards row */
+.top-cards {
+  display: flex;
+  gap: 24px;
+  margin-top: 37px;
+}
+
+/* Card modern look */
+.card {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(6px);
+  border-radius: 18px;
+  padding: 22px;
+  flex: 1;
+  margin-bottom: 1em;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+/* Site text */
+.site {
+  color: #777;
+  font-size: 14px;
+}
+
+/* Layout inside overview */
+.circle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 10px;
+}
+
+/* Animated circle */
+.circle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background:
+    conic-gradient(#3aa76d 0% 80%, #e6e6e6 80% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  position: relative;
+  color: #444;
+}
+
+/* inner white circle */
+.circle::before {
+  content: "";
+  position: absolute;
+  width: 105px;
+  height: 105px;
+  background: white;
+  border-radius: 50%;
+}
+
+
+
+.circle span {
+  position: relative;
+  z-index: 2;
+}
+
+/* Grade badge */
+.grade {
+  background: #c45a6a;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+/* Donut chart */
+.donut {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  margin: 15px auto;
+  background: conic-gradient(
+    #c54b4b 0% 5%,
+    #f39c3d 5% 25%,
+    #f5c242 25% 70%,
+    #3db46d 70% 100%
+  );
+  position: relative;
+}
+
+.donut::after {
+  content: "";
+  position: absolute;
+  inset: 35px;
+  background: white;
+  border-radius: 50%;
+}
+
+/* Legend */
+.severity ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.severity li {
+  margin: 6px 0;
+  color: #555;
+}
+
+/* Dot colors */
+.dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.critical { background: #c54b4b; }
+.serious { background: #f39c3d; }
+.moderate { background: #f5c242; }
+.minor { background: #3db46d; }
+
+/* Badge */
+.badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: white;
+  margin-right: 10px;
+  font-size: 12px;
+  margin: 1em;
+}
+
+.badge.critical { background: #c0392b; }
+.badge.serious { background: #e67e22; }
+.badge.moderate { background: #f1c40f; color: #000; }
+.badge.minor { background: #27ae60; }
+
+
+
+
+/* ===== Issue Cards ===== */
+.issue-card {
+  background: #b975934d;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 15px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.issue-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.issue-middle {
+  margin-top: 10px;
+}
+
+.issue-middle span {
+  color: #777;
+  font-size: 13px;
+}
+
+.issue-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+/* Buttons */
+.btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #eee;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #5b4b7e;
+  color: white;
+}
+
+/* WCAG Badge */
+.wcag {
+  margin-left: 8px;
+  background: #eee;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 20px;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  top: 2px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.switch input:checked + .slider {
+  background: #4caf50;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.history-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.graph {
+  width: 100%;
+  max-width: 500px;
+  height: 120px;
+}
+
+.graph circle {
+  fill: #6b5b95;
+}
+
+.history-list {
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 12px;
+  min-width: 160px;
+}
+
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.history-row strong {
+  color: #333;
+}
