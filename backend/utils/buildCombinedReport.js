@@ -90,6 +90,10 @@ function buildCombinedReport(rawReport) {
     timings: rawReport.timings || null,
     artifacts: rawReport.artifacts || null,
 
+    error: rawReport.error || null,
+    errorType: rawReport.errorType || null,
+    userMessage: rawReport.userMessage || null,
+
     summary: {
       totalIssues,
       healthScore,

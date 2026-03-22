@@ -1,10 +1,31 @@
 import express from "express";
+import fs from "fs/promises";
+import path from "path";
 import { randomUUID } from "crypto";
+import { fileURLToPath } from "url";
 import Scan from "../models/scan.js";
 import { cleanupScan } from "../utils/cleanupScan.js";
 import buildCombinedReport from "../utils/buildCombinedReport.js";
+import buildRecommendationReport from "../utils/buildRecommendationReport.js";
+import { generateAiSuggestions } from "../utils/generateAiSuggestions.js";
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const STORAGE_DIR = path.join(__dirname, "../storage");
+/** Single on-disk recommendation report per scan (replaces older latest + versioned duplicate). */
+const RECOMMENDATIONS_FILENAME = "recommendations.json";
+/** Legacy filename from earlier versions; still read if present. */
+const LEGACY_RECOMMENDATIONS_LATEST = "latest-recommendations.json";
+
+async function fileExists(filePath) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /* ---------------- HELPERS ---------------- */
 
@@ -63,10 +84,12 @@ router.get("/scans/:id", async (req, res) => {
     return res.status(404).json({ error: "Scan not found" });
   }
 
-  // 🔥 THIS IS THE IMPORTANT CHANGE
   const formattedReport = buildCombinedReport(scan);
 
-  res.json(formattedReport);   // return formatted dashboard report
+  res.json({
+    ...formattedReport,
+    aiConfigured: Boolean(process.env.OPENAI_API_KEY)
+  });
 });
 
 /* ---------------- SCAN STATUS ---------------- */
@@ -127,6 +150,121 @@ router.post("/scans/:id/rerun", async (req, res) => {
     scanId: scan.scanId,
     status: "queued"
   });
+});
+
+/* ---------------- GENERATE RAW RECOMMENDATION REPORT ---------------- */
+// POST /api/scans/:id/recommendations/raw
+router.post("/scans/:id/recommendations/raw", async (req, res) => {
+  const scan = await Scan.findOne({ scanId: req.params.id });
+
+  if (!scan) {
+    return res.status(404).json({ error: "Scan not found" });
+  }
+
+  const hasIssues = Object.values(scan.issues || {}).some(
+    (group) => Array.isArray(group) && group.length > 0
+  );
+
+  if (!hasIssues) {
+    return res.status(409).json({
+      error: "No issues available yet. Run or complete the scan first."
+    });
+  }
+
+  const scanDir = path.join(STORAGE_DIR, scan.scanId);
+  const existingPrimary = path.join(scanDir, RECOMMENDATIONS_FILENAME);
+  const existingLegacy = path.join(scanDir, LEGACY_RECOMMENDATIONS_LATEST);
+  const existingPath = (await fileExists(existingPrimary))
+    ? existingPrimary
+    : (await fileExists(existingLegacy))
+      ? existingLegacy
+      : null;
+
+  if (existingPath) {
+    const raw = await fs.readFile(existingPath, "utf-8");
+    const parsed = JSON.parse(raw);
+    return res.json({
+      message: "Recommendation report already exists",
+      reportId: parsed.reportId,
+      reportPath: `/storage/${scan.scanId}/${RECOMMENDATIONS_FILENAME}`,
+      aiUsed: parsed.meta?.aiUsed ?? false,
+      cached: true
+    });
+  }
+
+  const reportId = randomUUID();
+  const recommendationReport = buildRecommendationReport({ scan, reportId });
+  const maxAiIssues = Number(process.env.AI_MAX_ISSUES || 5);
+  const aiInput = recommendationReport.recommendations.slice(0, maxAiIssues);
+
+  const aiResult = await generateAiSuggestions({
+    scan,
+    recommendations: aiInput
+  });
+
+  recommendationReport.meta = {
+    aiEnabled: Boolean(process.env.OPENAI_API_KEY),
+    aiUsed: aiResult.aiUsed,
+    aiReason: aiResult.reason,
+    aiModel: process.env.OPENAI_MODEL || "gpt-4o-mini",
+    aiIssueLimit: maxAiIssues
+  };
+
+  recommendationReport.recommendations = recommendationReport.recommendations.map((item, index) => {
+    const aiData = aiResult.suggestionsByIssueId[item.issueId];
+    const aiProcessed = index < maxAiIssues && !!aiData;
+
+    return {
+      ...item,
+      whyItMatters: aiProcessed && aiData.whyItMatters ? aiData.whyItMatters : item.whyItMatters,
+      suggestedFix: aiProcessed && aiData.suggestedFix ? aiData.suggestedFix : item.suggestedFix,
+      problemCode: aiProcessed ? aiData.problemCode || "" : "",
+      generatedBy: aiProcessed ? "ai" : "rule-based"
+    };
+  });
+
+  await fs.mkdir(scanDir, { recursive: true });
+
+  const filePath = path.join(scanDir, RECOMMENDATIONS_FILENAME);
+  await fs.writeFile(filePath, JSON.stringify(recommendationReport, null, 2));
+
+  const reportPath = `/storage/${scan.scanId}/${RECOMMENDATIONS_FILENAME}`;
+
+  res.json({
+    message: "Recommendation report generated",
+    reportId,
+    reportPath,
+    aiUsed: recommendationReport.meta.aiUsed
+  });
+});
+
+/* ---------------- GET LATEST RAW RECOMMENDATION REPORT ---------------- */
+// GET /api/scans/:id/recommendations/raw/latest
+router.get("/scans/:id/recommendations/raw/latest", async (req, res) => {
+  const scan = await Scan.findOne({ scanId: req.params.id });
+
+  if (!scan) {
+    return res.status(404).json({ error: "Scan not found" });
+  }
+
+  const primaryPath = path.join(STORAGE_DIR, scan.scanId, RECOMMENDATIONS_FILENAME);
+  const legacyPath = path.join(STORAGE_DIR, scan.scanId, LEGACY_RECOMMENDATIONS_LATEST);
+  const pathToRead = (await fileExists(primaryPath))
+    ? primaryPath
+    : (await fileExists(legacyPath))
+      ? legacyPath
+      : null;
+
+  if (!pathToRead) {
+    return res.status(404).json({
+      error: "Latest recommendation report not found",
+      hint: "Generate one via POST /api/scans/:id/recommendations/raw"
+    });
+  }
+
+  const raw = await fs.readFile(pathToRead, "utf-8");
+  const parsed = JSON.parse(raw);
+  res.json(parsed);
 });
 
 export default router;

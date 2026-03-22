@@ -95,7 +95,8 @@ async function processScan(scan) {
     headless: true
   });
 
-  const context = await browser.newContext();
+  // Allow injecting axe-core on sites with strict CSP (e.g. MDN, many SaaS apps).
+  const context = await browser.newContext({ bypassCSP: true });
   const page = await context.newPage();
 
   const startTime = Date.now();

@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { API_BASE } from "../apiBase.js";
 import "./Hero.css";
 
 export default function Hero({ onScan }) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
 
-  const handleScan = (e) => {
+  const handleScan = async (e) => {
     e.preventDefault();
     if (!url.trim()) {
       setMsg("Please enter a valid URL.");
@@ -16,21 +19,29 @@ export default function Hero({ onScan }) {
     setLoading(true);
     setMsg("");
 
-    // Replace with real backend API call
-   setTimeout(() => {
-  setLoading(false);
-  onScan(url);
+    try {
+      const res = await fetch(`${API_BASE}/api/scans`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ url: url.trim() })
+      });
 
-  // store scanned URL for ScanResults page
-  localStorage.setItem("scannedUrl", url);
+      const data = await res.json();
 
-  // optional message (won't be seen because page changes)
-  setMsg("Demo scan completed. Connect backend later.");
+      if (!res.ok || !data?.scanId) {
+        throw new Error(data?.error || "Unable to start scan.");
+      }
 
-  // go to scan page (simple navigation)
-  window.location.href = "/scan";
-}, 1000);
-
+      onScan(url.trim());
+      localStorage.setItem("scannedUrl", url.trim());
+      navigate(`/scan/${data.scanId}`);
+    } catch (error) {
+      setMsg(error.message || "Failed to start scan. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

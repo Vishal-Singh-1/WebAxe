@@ -277,3 +277,75 @@ body {
 .history-row strong {
   color: #333;
 }
+
+.scan-failure-banner {
+  border-left: 4px solid #c0392b;
+  background: #fff5f5;
+}
+
+.scan-failure-banner h3 {
+  margin-top: 0;
+  color: #922b21;
+}
+
+.scan-failure-primary {
+  font-size: 1.05rem;
+  margin: 0.5rem 0;
+}
+
+.scan-failure-context {
+  color: #555;
+  margin: 0.5rem 0 0;
+  line-height: 1.5;
+}
+
+.scan-failure-meta {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0.75rem 0 0;
+}
+
+.scan-failure-label {
+  font-weight: 600;
+}
+
+.ai-config-hint,
+.ai-key-hint {
+  background: #f8f6ff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+
+.ai-config-hint code,
+.ai-key-hint code {
+  font-size: 0.9em;
+}
+
+.suggestions-meta {
+  margin-top: 12px;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.artifacts-card .artifact-hint {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.artifact-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.artifact-links li {
+  margin-bottom: 8px;
+}
+
+.artifact-links a {
+  color: #4a3f8c;
+  font-weight: 500;
+}

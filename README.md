@@ -76,3 +76,28 @@ Local / Cloud Storage (reports & screenshots)
 - **Artifacts:** Local filesystem (MVP)  
   → S3 / Cloudflare R2 recommended for production
 - **Dev tools:** MongoDB Compass / VS Code MongoDB extension
+
+---
+
+## Configuration
+
+Set variables in `backend/.env` (API and worker load the same file from the backend directory).
+
+| Variable | Purpose |
+|----------|---------|
+| `MONGODB_URI` | MongoDB connection string for scan metadata. |
+| `PORT` | API port (default `3000`). |
+| `OPENAI_API_KEY` | If set, recommendation generation can call OpenAI for AI-assisted fixes. If unset, suggestions stay rule-based. |
+| `OPENAI_MODEL` | OpenAI model id (default `gpt-4o-mini`). |
+| `AI_MAX_ISSUES` | Max number of issues sent to the model per report (default `5`, cost control). |
+| `AI_TIMEOUT_MS` | Timeout for the OpenAI request in ms (default `20000`). |
+
+**Worker (Playwright + axe):** the worker creates the browser with `bypassCSP: true` so `axe-core` can be injected on sites with strict Content Security Policy. That applies only to the automated Chromium session, not to end users’ browsers.
+
+**Static artifacts:** the API serves `backend/storage` at `GET /storage/...`. Raw JSON and screenshots are linked as `/storage/<scanId>/raw-report.json` and `screenshot.png`. The Vite app uses `VITE_API_URL` (see below) so those links match your deployed API host.
+
+**Frontend:** optional `webaxe-frontend/.env`:
+
+| Variable | Purpose |
+|----------|---------|
+| `VITE_API_URL` | Base URL of the backend (e.g. `http://localhost:3000`). Defaults to `http://localhost:3000` if omitted. |
