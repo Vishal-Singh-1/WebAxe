@@ -1,13 +1,34 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../apiBase.js";
+import { getAuthHeaders } from "../auth.js";
 import "./Hero.css";
 
-export default function Hero({ onScan }) {
+const SECTOR_OPTIONS = [
+  { value: "general", label: "General website" },
+  { value: "kids", label: "Kids website" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "government", label: "Government" },
+  { value: "ecommerce", label: "E-commerce" }
+];
+
+export default function Hero({ onScan, token }) {
   const [url, setUrl] = useState("");
+  const [sector, setSector] = useState("general");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const navigate = useNavigate();
+
+  async function parseJsonResponse(res, fallbackMessage) {
+    const contentType = res.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      return await res.json();
+    }
+
+    const text = await res.text();
+    throw new Error(`${fallbackMessage} ${text.slice(0, 120)}`.trim());
+  }
 
   const handleScan = async (e) => {
     e.preventDefault();
@@ -20,15 +41,25 @@ export default function Hero({ onScan }) {
     setMsg("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/scans`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ url: url.trim() })
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      let res;
 
-      const data = await res.json();
+      try {
+        res = await fetch(`${API_BASE}/api/scans`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(token)
+          },
+          body: JSON.stringify({ url: url.trim(), sector }),
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      const data = await parseJsonResponse(res, "Scan API did not return JSON.");
 
       if (!res.ok || !data?.scanId) {
         throw new Error(data?.error || "Unable to start scan.");
@@ -38,23 +69,27 @@ export default function Hero({ onScan }) {
       localStorage.setItem("scannedUrl", url.trim());
       navigate(`/scan/${data.scanId}`);
     } catch (error) {
-      setMsg(error.message || "Failed to start scan. Try again.");
+      if (error.name === "AbortError") {
+        setMsg("Starting the scan took too long. Please check that the backend is running and try again.");
+      } else {
+        setMsg(error.message || "Failed to start scan. Try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="hero-container">
-      <div className="hero-badge">Accessibility Scanner</div>
+    <section className="hero-container" id="hero">
+      <div className="hero-badge">Deep Website Scanner</div>
 
       <h1 className="hero-title">
-        Is your website legally accessible?
-        <span className="highlight">Find out in 60 seconds.</span>
+        Audit credibility, trust, and compliance
+        <span className="highlight">with sector-aware rules in one scan.</span>
       </h1>
 
       <p className="hero-desc">
-        Run WCAG 2.1 AA & EAA compliance scans instantly with real-time fixes.
+        Run sector-aware website audits across security, privacy, accessibility, performance, and trust.
       </p>
 
       <form className="hero-form" onSubmit={handleScan}>
@@ -66,13 +101,25 @@ export default function Hero({ onScan }) {
           onChange={(e) => setUrl(e.target.value)}
         />
 
+        <select
+          className="sector-select"
+          value={sector}
+          onChange={(e) => setSector(e.target.value)}
+          aria-label="Website sector"
+        >
+          {SECTOR_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
         <button className="scan-btn" type="submit" disabled={loading}>
-          {loading ? "Scanning…" : "Check Accessibility"}
+          {loading ? "Scanning..." : "Run Deep Scan"}
         </button>
       </form>
 
-      {msg && <div className="msg">{msg}</div>}
-      
+      {msg ? <div className="msg">{msg}</div> : null}
     </section>
   );
 }

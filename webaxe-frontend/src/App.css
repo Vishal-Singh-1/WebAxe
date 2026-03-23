@@ -1,26 +1,25 @@
 .app-container {
   font-family: Arial, sans-serif;
   color: #4b2138;
-  
+  scroll-behavior: smooth;
 }
+
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+
 .header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 30px;
-
-  background-color: #c9c0bf65 ;/* light gray glass */
+  background-color: #c9c0bf65;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(10px);
-
   padding: 16px 0;
   z-index: 5000;
 }
-
 
 .header-inner {
   max-width: 1200px;
@@ -37,6 +36,7 @@
   gap: 8px;
   font-weight: bold;
   font-size: 20px;
+  text-decoration: none;
 }
 
 .logo-icon {
@@ -51,15 +51,16 @@
   border-radius: 8px;
   font-weight: 500;
 }
-#app-name{
+
+#app-name {
   font-size: 1.5em;
   color: #4b2138;
   font-weight: 600;
 }
+
 .nav-links {
   display: flex;
   gap: 20px;
- 
   align-items: center;
 }
 
@@ -71,13 +72,21 @@
 }
 
 .get-started {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 8px 16px;
   background: #1b0c1a;
-  color: #fadcd5;
+  color: #fadcd5 !important;
   border: none;
-  font-size: 1em;
+  font-size: 1em !important;
   border-radius: 6px;
   cursor: pointer;
+  text-decoration: none;
+}
+
+main {
+  padding-top: 30px;
 }
 
 .footer {
@@ -86,22 +95,20 @@
   text-align: center;
   font-size: 1em;
   color: #1b0c1a;
- 
-}
-main {
-  padding-top: 30px; /* same as header height */
 }
 
-#about {
-background-color: #a57485;
+#about,
+#how-it-works {
+  background-color: #a57485;
   max-width: 900px;
   border-radius: 10px;
-  margin: 0 auto;
+  margin: 2em auto 0;
   padding: 0.1em 4em;
   text-align: center;
 }
 
-#about h2 {
+#about h2,
+#how-it-works h2 {
   font-size: 2.5em;
   margin-bottom: 0.5em;
   color: #1b0c1a;
@@ -114,37 +121,113 @@ background-color: #a57485;
   color: #fadcd5;
   margin-bottom: 1em;
 }
-#how-it-works {
-  background-color: #a57485;
-  border-radius: 10px;
-padding: 0.1em 4em;
-  max-width: 900px;
-  margin: 0 auto;
-  margin-top: 2em;
-  text-align: center;
-}
-
-#how-it-works h2 {
- font-size: 2.5em;
-  margin-bottom: 0.5em;
-  color: #1b0c1a;}
 
 #how-it-works ol {
- text-align: center;
+  text-align: center;
   list-style-position: inside;
   padding: 0;
-  margin: 0;
-  margin-bottom: 1em;
+  margin: 0 0 1em;
 }
 
 #how-it-works li {
-   font-size: 1.2em;
+  font-size: 1.2em;
   font-weight: 400;
   line-height: 1.7;
-   color: #fadcd5;
+  color: #fadcd5;
   margin-bottom: 0.5em;
-
 }
+
+.info-section {
+  max-width: 1100px;
+  margin: 2em auto 0;
+  padding: 2.3em;
+  border-radius: 18px;
+  background: rgba(255, 245, 244, 0.78);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 16px 34px rgba(88, 53, 73, 0.08);
+}
+
+.info-section.alt {
+  background: rgba(245, 229, 234, 0.78);
+}
+
+.info-section h2 {
+  margin-top: 0;
+  font-size: 2.2em;
+  color: #3f2432;
+}
+
+.info-section p {
+  color: #61495a;
+  font-size: 1.08em;
+  line-height: 1.7;
+}
+
+.info-grid {
+  margin-top: 1.5em;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  padding: 1.2em;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(165, 116, 133, 0.18);
+}
+
+.info-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  color: #4b2138;
+}
+
+.info-card p {
+  margin: 0;
+  font-size: 0.98em;
+}
+
+.pricing-grid .featured-plan {
+  background: linear-gradient(180deg, rgba(165, 116, 133, 0.16), rgba(255, 255, 255, 0.88));
+}
+
+.price-tag {
+  display: inline-block;
+  margin: 0 0 0.8em;
+  padding: 0.35em 0.7em;
+  border-radius: 999px;
+  background: #1b0c1a;
+  color: #fadcd5 !important;
+  font-weight: 700;
+  font-size: 0.9em !important;
+}
+
+.contact-actions {
+  margin-top: 1.4em;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85em 1.15em;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 700;
+  color: #4b2138;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(165, 116, 133, 0.18);
+}
+
+.contact-btn.primary-link {
+  background: #1b0c1a;
+  color: #fadcd5;
+}
+
 .hamburger {
   display: flex;
   flex-direction: column;
@@ -172,6 +255,7 @@ padding: 0.1em 4em;
 .hamburger.active span:nth-child(3) {
   transform: rotate(-45deg) translate(4px, -4px);
 }
+
 .menu-panel {
   position: fixed;
   top: 0;
@@ -179,40 +263,34 @@ padding: 0.1em 4em;
   width: 15%;
   min-width: 200px;
   height: 100%;
-  background: #1b0c1a;
-
- background-color: #1b0c1ae7;
+  background-color: #1b0c1ae7;
   backdrop-filter: blur(10px);
-
-
-
   padding: 90px 32px;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-
   display: flex;
   flex-direction: column;
   gap: 28px;
-
-  /* 🔑 KEY FIX */
   visibility: hidden;
   pointer-events: none;
-
   transition: right 0.4s ease, visibility 0.4s ease;
   z-index: 5500;
 }
-.menu-panel a{
+
+.menu-panel a {
   text-decoration: none;
-  color:#fadcd5;
+  color: #fadcd5;
   font-size: 1.7em;
-  font-weight:600 ;
- margin-bottom: 0.6em;
+  font-weight: 600;
+  margin-bottom: 0.6em;
 }
-/* When menu is open */
+
 .menu-panel.open {
   right: 0;
   visibility: visible;
   pointer-events: auto;
-}.menu-overlay {
+}
+
+.menu-overlay {
   opacity: 0;
   pointer-events: none;
 }
@@ -233,47 +311,161 @@ padding: 0.1em 4em;
   cursor: pointer;
 }
 
-
-/* =========================
-   Full Screen Scan Page
-========================= */
-#scan {
-  position: fixed;        /* take it out of normal flow */
-  top: 0;
-  left: 0;
-
-  width: 100%;           /* full screen width */
-  height: 100%;          /* full screen height */
-
-  background-color: #fde3dc; /* same theme background */
-  z-index: 4000;          /* higher than header (1000) */
-
-  padding: 80px 40px;     /* spacing inside page */
-  box-sizing: border-box;
-
-  overflow-y: auto;       /* scroll only scan page */
+.last-scan {
+  margin-left: 6px;
 }
 
-/* Optional: improve text look */
-#scan h1 {
-  font-size: 2.4em;
-  margin-bottom: 0.4em;
+.account-page {
+  min-height: 100vh;
+  padding: 110px 20px 40px;
+}
+
+.account-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px;
+  border-radius: 24px;
+  background: rgba(255, 248, 247, 0.86);
+  box-shadow: 0 18px 42px rgba(89, 54, 77, 0.08);
+}
+
+.account-eyebrow {
+  margin: 0 0 8px;
+  color: #9f6172;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.account-header h1 {
+  margin: 0 0 10px;
   color: #4b2138;
 }
 
-#scan p {
-  font-size: 1.1em;
-  margin-bottom: 1em;
+.account-copy {
+  color: #61495a;
+  line-height: 1.7;
 }
 
-/* Back link style */
-#scan a {
-  font-weight: 600;
-  color: #1b0c1a;
-  font-size: 2em;
+.account-grid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.account-card {
+  padding: 22px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(165, 116, 133, 0.18);
+}
+
+.account-card h2 {
+  margin-top: 0;
+  color: #4b2138;
+}
+
+.account-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  color: #4b2138;
+  border-bottom: 1px solid rgba(165, 116, 133, 0.12);
+}
+
+.account-row:last-of-type {
+  border-bottom: none;
+}
+
+.account-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.account-link,
+.account-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85em 1.15em;
+  border-radius: 12px;
   text-decoration: none;
+  font-weight: 700;
 }
 
-#scan a:hover {
-  text-decoration: underline;
+.account-link {
+  color: #4b2138;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(165, 116, 133, 0.18);
+}
+
+.account-logout {
+  border: none;
+  background: #1b0c1a;
+  color: #fadcd5;
+  cursor: pointer;
+}
+
+@media (max-width: 920px) {
+  .header-inner {
+    gap: 16px;
+  }
+
+  .nav-links {
+    gap: 14px;
+  }
+
+  .nav-links a {
+    font-size: 1.05em;
+  }
+
+  #about,
+  #how-it-works,
+  .info-section {
+    margin-left: 20px;
+    margin-right: 20px;
+    padding: 1.6em;
+  }
+}
+
+@media (max-width: 720px) {
+  .header {
+    height: auto;
+  }
+
+  .nav-links > a:not(.get-started) {
+    display: none;
+  }
+
+  .logo {
+    min-width: 0;
+  }
+
+  #app-name {
+    font-size: 1.25em;
+  }
+
+  #about,
+  #how-it-works {
+    padding: 0.8em 1.2em;
+  }
+
+  #about h2,
+  #how-it-works h2,
+  .info-section h2 {
+    font-size: 1.8em;
+  }
+
+  .contact-actions {
+    flex-direction: column;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
 }

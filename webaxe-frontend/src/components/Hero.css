@@ -52,6 +52,15 @@
   font-size: 15px;
 }
 
+.sector-select {
+  min-width: 220px;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  background: #fff;
+}
+
 .scan-btn {
   padding: 12px 20px;
   width: 12em;

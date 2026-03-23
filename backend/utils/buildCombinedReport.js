@@ -1,5 +1,6 @@
 function buildCombinedReport(rawReport) {
   const flatIssues = [];
+  const audit = rawReport.audit || null;
 
   const severityDistribution = {
     critical: 0,
@@ -72,6 +73,10 @@ function buildCombinedReport(rawReport) {
 
   healthScore = Math.max(healthScore, 0);
 
+  if (typeof audit?.overallScore === "number") {
+    healthScore = audit.overallScore;
+  }
+
   // Grade logic
   function getGrade(score) {
     if (score >= 90) return "A";
@@ -101,7 +106,24 @@ function buildCombinedReport(rawReport) {
       severityDistribution
     },
 
+    rating: audit
+      ? {
+          profile: rawReport.scanProfile || null,
+          overallScore: audit.overallScore,
+          categories: audit.categories || {},
+          trustIndicators: audit.trustIndicators || [],
+          stats: audit.stats || {}
+        }
+      : {
+          profile: rawReport.scanProfile || null,
+          overallScore: healthScore,
+          categories: {},
+          trustIndicators: [],
+          stats: {}
+        },
+
     issues: flatIssues,
+    audit: rawReport.audit || null,
 
     // Keep raw grouping for debugging / backward compatibility
     rawIssueGroups: rawReport.issues || {}

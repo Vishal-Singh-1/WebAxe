@@ -5,8 +5,10 @@ import express from "express";
 import cors from "cors";
 
 import connectDB from "./config/db.js";
+import authRoutes from "./routes/auth.routes.js";
 import scansRoutes from "./routes/scans.routes.js";
 import workerRoutes from "./routes/worker.routes.js";
+import { requireAuth } from "./middleware/auth.js";
 
 /* ---------------- CONFIG ---------------- */
 
@@ -34,8 +36,9 @@ app.use("/storage", express.static(STORAGE_DIR));
 
 /* ---------------- ROUTES ---------------- */
 
-app.use("/api", scansRoutes);
-app.use("/api", workerRoutes);
+app.use("/api", authRoutes);
+app.use("/api", requireAuth, scansRoutes);
+app.use("/api", requireAuth, workerRoutes);
 
 /* ---------------- HEALTH CHECK ---------------- */
 

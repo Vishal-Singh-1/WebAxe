@@ -1,0 +1,287 @@
+.scan-history-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+.history-header h1 {
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+}
+
+.history-lead {
+  color: #555;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.history-back {
+  display: inline-block;
+  color: #4a3f8c;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 24px;
+}
+
+.history-back:hover {
+  text-decoration: underline;
+}
+
+.history-section {
+  margin-bottom: 32px;
+}
+
+.card-like {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.history-section h2 {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.section-hint {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 16px;
+}
+
+.history-error {
+  color: #922b21;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.history-table th,
+.history-table td {
+  text-align: left;
+  padding: 10px 10px 10px 0;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.cell-url {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.status-completed {
+  background: #e3f4e8;
+  color: #1b5e20;
+}
+
+.status-failed {
+  background: #fdecea;
+  color: #c41c1c;
+}
+
+.status-running,
+.status-queued {
+  background: #fff8e1;
+  color: #6d4c00;
+}
+
+.table-link {
+  color: #4a3f8c;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.table-link:hover {
+  text-decoration: underline;
+}
+
+.url-trend-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.url-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.url-trend-form button {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background: #6b5b95;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.url-trend-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.series-meta {
+  font-size: 0.85rem;
+  color: #555;
+  margin: 0 0 16px;
+}
+
+.series-meta code {
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.trend-chart {
+  margin-top: 8px;
+}
+
+.trend-chart h4 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.trend-svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
+}
+
+.axis-y {
+  font-size: 10px;
+  fill: #666;
+}
+
+.trend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.trend-legend-item {
+  font-size: 0.75rem;
+  color: #555;
+  background: #f5f4fa;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.trend-chart.empty {
+  padding: 12px;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.compare-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.compare-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.compare-form select {
+  min-width: 260px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.85rem;
+}
+
+.compare-form button {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #3aa76d;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  height: fit-content;
+}
+
+.compare-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.compare-card {
+  background: #f8f8fc;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e8e6f2;
+}
+
+.compare-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.compare-card .mono {
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  word-break: break-all;
+}
+
+.compare-card ul {
+  margin: 8px 0 0;
+  padding-left: 1.2rem;
+}
+
+.compare-delta {
+  background: #fffef5;
+  border-color: #e8d89a;
+}
+
+.compare-delta .good {
+  color: #1b5e20;
+}
+
+.compare-delta .bad {
+  color: #c41c1c;
+}

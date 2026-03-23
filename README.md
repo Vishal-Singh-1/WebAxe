@@ -101,3 +101,11 @@ Set variables in `backend/.env` (API and worker load the same file from the back
 | Variable | Purpose |
 |----------|---------|
 | `VITE_API_URL` | Base URL of the backend (e.g. `http://localhost:3000`). Defaults to `http://localhost:3000` if omitted. |
+
+### Analytics API (Week 6)
+
+- `GET /api/scans/history/recent?limit=100` — lightweight list of recent scans (totals, health, grades).
+- `GET /api/scans/history/by-url?url=` — all scans for a normalized URL, chronological (for trends).
+- `GET /api/scans/compare?before=&after=` — two scan IDs; returns summaries and deltas (issues, health, severity).
+
+Each new scan stores `urlNormalized` (derived from the submitted URL) so repeated scans of the same site group together. Existing documents get `urlNormalized` the next time they are saved.

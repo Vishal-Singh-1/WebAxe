@@ -6,7 +6,17 @@ function extractJsonObject(text = "") {
 }
 
 export async function generateAiSuggestions({ scan, recommendations }) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = (process.env.OPENAI_API_KEY || "").trim();
+  const placeholderKeys = new Set(["your_key_here", "your-api-key-here", "replace_me"]);
+
+  if (placeholderKeys.has(apiKey.toLowerCase())) {
+    return {
+      aiUsed: false,
+      reason: "OPENAI_API_KEY is still set to a placeholder value",
+      suggestionsByIssueId: {}
+    };
+  }
+
   if (!apiKey) {
     return {
       aiUsed: false,
