@@ -81,7 +81,9 @@ export default function AuthPage({ token, onAuthSuccess }) {
       <div className={`auth-shell ${mode === "register" ? "register-mode" : ""}`}>
         <section className="auth-hero-panel">
           <div className="auth-brand">
-            <div className="auth-brand-icon">A</div>
+            <div className="auth-brand-icon">
+              <span className="logo-glyph">W</span>
+            </div>
             <div>
               <h1>WebAxe</h1>
               <p>Secure accessibility scanning for modern teams.</p>
@@ -89,7 +91,6 @@ export default function AuthPage({ token, onAuthSuccess }) {
           </div>
 
           <div className="auth-copy">
-            <span className="auth-pill">JWT Authentication</span>
             <h2>{mode === "login" ? "Welcome back" : "Create your account"}</h2>
             <p>
               {mode === "login"

@@ -1,8 +1,4 @@
-function toIssueList(issueGroups = {}) {
-  return Object.entries(issueGroups).flatMap(([group, issues]) =>
-    (issues || []).map((issue) => ({ ...issue, severityGroup: group }))
-  );
-}
+import { normalizeIssues } from "./normalizeIssues.js";
 
 function buildFixSuggestion(issue) {
   const selectors = (issue.nodes || [])
@@ -28,7 +24,7 @@ function buildFixSuggestion(issue) {
 }
 
 export default function buildRecommendationReport({ scan, reportId }) {
-  const issueList = toIssueList(scan?.issues || {});
+  const issueList = normalizeIssues(scan).issues;
   const recommendations = issueList.map(buildFixSuggestion);
 
   return {

@@ -12,6 +12,9 @@ const SECTOR_OPTIONS = [
   { value: "ecommerce", label: "E-commerce" }
 ];
 
+const SCAN_POLL_INTERVAL_MS = 3000;
+const SCAN_POLL_MAX_ATTEMPTS = 60;
+
 export default function Hero({ onScan, token }) {
   const [url, setUrl] = useState("");
   const [sector, setSector] = useState("general");
@@ -30,8 +33,35 @@ export default function Hero({ onScan, token }) {
     throw new Error(`${fallbackMessage} ${text.slice(0, 120)}`.trim());
   }
 
+  async function waitForScanCompletion(scanId) {
+    for (let attempt = 0; attempt < SCAN_POLL_MAX_ATTEMPTS; attempt += 1) {
+      const res = await fetch(`${API_BASE}/api/scans/${scanId}/status`, {
+        headers: getAuthHeaders(token)
+      });
+      const data = await parseJsonResponse(res, "Scan status API did not return JSON.");
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Unable to check scan status.");
+      }
+
+      const status = String(data?.status || "").toLowerCase();
+      if (status === "completed" || status === "failed") {
+        return status;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, SCAN_POLL_INTERVAL_MS));
+    }
+
+    return "timeout";
+  }
+
   const handleScan = async (e) => {
     e.preventDefault();
+    if (!token) {
+      navigate("/auth");
+      return;
+    }
+
     if (!url.trim()) {
       setMsg("Please enter a valid URL.");
       return;
@@ -67,7 +97,21 @@ export default function Hero({ onScan, token }) {
 
       onScan(url.trim());
       localStorage.setItem("scannedUrl", url.trim());
-      navigate(`/scan/${data.scanId}`);
+      setMsg("Scan started. Staying on the homepage until the report is ready...");
+
+      const finalStatus = await waitForScanCompletion(data.scanId);
+
+      if (finalStatus === "completed") {
+        navigate(`/scan/${data.scanId}`);
+        return;
+      }
+
+      if (finalStatus === "failed") {
+        setMsg("Scan failed before the report was ready. You can review it later from History.");
+        return;
+      }
+
+      setMsg("The scan is taking longer than expected. You can check its progress later from History.");
     } catch (error) {
       if (error.name === "AbortError") {
         setMsg("Starting the scan took too long. Please check that the backend is running and try again.");
@@ -81,15 +125,14 @@ export default function Hero({ onScan, token }) {
 
   return (
     <section className="hero-container" id="hero">
-      <div className="hero-badge">Deep Website Scanner</div>
+      <div className="hero-badge">Accessibility Compliance Platform</div>
 
       <h1 className="hero-title">
-        Audit credibility, trust, and compliance
-        <span className="highlight">with sector-aware rules in one scan.</span>
+        Beyond scanning - into real accessibility.
       </h1>
 
       <p className="hero-desc">
-        Run sector-aware website audits across security, privacy, accessibility, performance, and trust.
+        Review legal compliance risk, run deep accessibility scans, and move from raw issues to a clearer remediation plan.
       </p>
 
       <form className="hero-form" onSubmit={handleScan}>
@@ -115,7 +158,7 @@ export default function Hero({ onScan, token }) {
         </select>
 
         <button className="scan-btn" type="submit" disabled={loading}>
-          {loading ? "Scanning..." : "Run Deep Scan"}
+          {loading ? "Scanning..." : token ? "Scan" : "Login to Start"}
         </button>
       </form>
 

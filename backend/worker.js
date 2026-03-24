@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -6,6 +5,7 @@ import { chromium } from "playwright";
 import axeSource from "axe-core";
 
 import connectDB from "./config/db.js";
+import { loadBackendEnv } from "./config/loadEnv.js";
 import { resolveScanProfile } from "./config/scanProfiles.js";
 import Scan from "./models/scan.js";
 import { processAxeResults } from "./utils/processAxeResults.js";
@@ -15,7 +15,7 @@ import { startHeartbeat } from "./worker/heartbeat.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, ".env") });
+loadBackendEnv();
 
 startHeartbeat();
 await connectDB();

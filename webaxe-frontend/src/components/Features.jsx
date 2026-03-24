@@ -2,10 +2,22 @@ import "./Features.css";
 
 export default function Features() {
   const features = [
-    { title: "90+ WCAG Checks", desc: "Covers all major WCAG 2.1 AA rules." },
-    { title: "AI-powered fixes", desc: "Smart suggestions for common issues." },
-    { title: "EAA & ADA Ready", desc: "Legally compliant accessibility reports." },
-    { title: "Dual-engine scan", desc: "axe-core + custom heuristics." },
+    {
+      title: "Legal compliance",
+      desc: "Focus reporting around accessibility expectations tied to WCAG, EAA, and broader compliance risk."
+    },
+    {
+      title: "Deep scanning",
+      desc: "Run structured website scans with detailed findings, readable issue grouping, and repeatable workflows."
+    },
+    {
+      title: "60+ WCAG checks",
+      desc: "Automated WCAG A and AA checks help surface high-impact accessibility issues across key page patterns."
+    },
+    {
+      title: "Sector-based scanning",
+      desc: "Choose website sectors like healthcare, government, ecommerce, or kids for a more tailored scan flow."
+    }
   ];
 
   return (

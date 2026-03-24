@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Routes, Route, useLocation, Navigate, Link } from "react-router-dom";
+import { useState } from "react";
+import { Routes, Route, useLocation, Navigate, Link, NavLink } from "react-router-dom";
 
 import ScanResults from "./components/ScanResults";
 import ScanHistory from "./components/ScanHistory";
@@ -12,6 +12,112 @@ import { clearAuth, getStoredAuth, saveAuth } from "./auth";
 import "./App.css";
 import "./components/AuthPage.css";
 
+const CONTACT_EMAIL = "vishalsingh67864@gamail.com";
+
+const pageContent = {
+  wcag: {
+    eyebrow: "WCAG standards",
+    title: "Understand the accessibility rules teams are expected to meet.",
+    intro:
+      "WCAG, or Web Content Accessibility Guidelines, is the core accessibility framework used by regulators, procurement teams, and auditors worldwide.",
+    cards: [
+      {
+        title: "Perceivable content",
+        body: "Text alternatives, captions, contrast, and adaptable layouts help people access information in different ways."
+      },
+      {
+        title: "Operable experiences",
+        body: "Keyboard support, focus visibility, timing controls, and predictable interactions reduce barriers across the interface."
+      },
+      {
+        title: "Understandable patterns",
+        body: "Clear labels, helpful errors, and consistent navigation make tasks easier to complete for more users."
+      },
+      {
+        title: "Robust implementation",
+        body: "Semantic HTML and valid ARIA help assistive technologies interpret your site correctly."
+      }
+    ]
+  },
+  eaa: {
+    eyebrow: "EAA readiness",
+    title: "Prepare digital products for the European Accessibility Act.",
+    intro:
+      "The EAA raises the bar for accessible digital products and services in the EU, making accessibility a business requirement instead of an optional enhancement.",
+    cards: [
+      {
+        title: "Broader business impact",
+        body: "E-commerce, banking, transport, media, telecom, and self-service platforms can all fall into scope."
+      },
+      {
+        title: "Shared accountability",
+        body: "Legal, design, engineering, QA, and product teams all play a role in demonstrating accessibility readiness."
+      },
+      {
+        title: "Evidence matters",
+        body: "Clear reports, repeatable scans, and issue history make it easier to show progress over time."
+      },
+      {
+        title: "Earlier fixes cost less",
+        body: "Finding accessibility issues before launch reduces remediation cost and compliance stress."
+      }
+    ]
+  },
+  pricing: {
+    eyebrow: "Pricing",
+    title: "Choose a workflow that matches where your compliance program is today.",
+    intro:
+      "Use WebAxe for quick validation, ongoing scan monitoring, or a more formal reporting workflow as the project grows.",
+    cards: [
+      {
+        title: "Starter",
+        body: "$490 per year. Best for smaller sites that need scheduled checks, core WCAG coverage, and a lightweight compliance baseline."
+      },
+      {
+        title: "Growth",
+        body: "$990 per year. Designed for recurring scans, scan history, issue tracking, and reporting across a growing website."
+      },
+      {
+        title: "Scale",
+        body: "$2,990 per year. Better for larger estates that need deeper monitoring, stronger documentation, and broader compliance visibility."
+      },
+      {
+        title: "Enterprise",
+        body: "Custom pricing. For complex websites, large page counts, and teams that need managed accessibility support."
+      }
+    ]
+  },
+  about: {
+    eyebrow: "About WebAxe",
+    title: "WebAxe helps teams reduce accessibility risk with simple, readable scanning workflows.",
+    intro:
+      "This project focuses on giving website owners a practical way to audit accessibility, understand standards like WCAG and EAA, and act on issues before they become expensive.",
+    cards: [
+      {
+        title: "Compliance-first messaging",
+        body: "The UI is designed to explain why accessibility matters, not just list technical checks."
+      },
+      {
+        title: "Deep scanning workflow",
+        body: "Users can run scans, inspect reports, and revisit historical results from the same product."
+      },
+      {
+        title: "Project direction",
+        body: "The goal is to keep improving clarity, trust, and usefulness for accessibility-focused teams."
+      }
+    ]
+  }
+};
+
+const complianceAreas = [
+  "Government and public sector websites",
+  "E-commerce and online marketplaces",
+  "Banking, fintech, and payment flows",
+  "Healthcare and patient service portals",
+  "Education platforms and admissions portals",
+  "Transport, travel, and booking systems"
+];
+
 function ProtectedRoute({ token, children }) {
   if (!token) {
     return <Navigate to="/auth" replace />;
@@ -20,144 +126,119 @@ function ProtectedRoute({ token, children }) {
   return children;
 }
 
+function PageHero({ eyebrow, title, intro }) {
+  return (
+    <section className="page-hero">
+      <p className="page-eyebrow">{eyebrow}</p>
+      <h1>{title}</h1>
+      <p className="page-intro">{intro}</p>
+    </section>
+  );
+}
+
+function InsightGrid({ items }) {
+  return (
+    <div className="info-grid">
+      {items.map((item) => (
+        <article className="info-card" key={item.title}>
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function MarketingPage({ pageKey }) {
+  const page = pageContent[pageKey];
+
+  return (
+    <main className="marketing-main">
+      <PageHero eyebrow={page.eyebrow} title={page.title} intro={page.intro} />
+
+      <section className="info-section">
+        <h2>Key takeaways</h2>
+        <InsightGrid items={page.cards} />
+      </section>
+    </main>
+  );
+}
+
+function Footer({ lastUrl }) {
+  return (
+    <footer className="footer">
+      <div>
+        <strong>WebAxe</strong> helps teams scan for accessibility risk with a cleaner compliance-first workflow.
+      </div>
+      <div>
+        Contact: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+      </div>
+      {lastUrl ? <div className="last-scan">Last scanned: {lastUrl}</div> : null}
+    </footer>
+  );
+}
+
 function HomeSections({ lastUrl, onScan, token }) {
   return (
     <>
-      <main>
+      <main className="marketing-main">
         <Hero onScan={onScan} token={token} />
         <Features />
 
-        <section id="wcag" className="info-section">
-          <h2>WCAG Coverage</h2>
-          <p>
-            WebAxe checks high-impact accessibility issues across landmarks, labels, color
-            contrast, ARIA, semantics, and other common WCAG 2.1 AA requirements.
-          </p>
+        <section className="info-section split-section">
+          <div>
+            <p className="section-label">What are WCAG and EAA</p>
+            <h2>Know the standards behind digital accessibility compliance.</h2>
+          </div>
+          <div className="split-card-group">
+            <article className="info-card split-info-card">
+              <h3>What is WCAG</h3>
+              <p>
+                WCAG defines how digital experiences should work for people with disabilities and is the benchmark used in audits and legal reviews.
+              </p>
+            </article>
+            <article className="info-card split-info-card">
+              <h3>What is EAA</h3>
+              <p>
+                The European Accessibility Act turns accessibility expectations into legal obligations for many digital products and services in the EU market.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section className="info-section cost-section">
+          <p className="section-label">High cost of non-compliance</p>
+          <h2>Non-compliance gets expensive fast.</h2>
           <div className="info-grid">
-            <article className="info-card">
-              <h3>Automated checks</h3>
-              <p>Run browser-based audits against real pages using the same scan flow every time.</p>
+            <article className="info-card emphasis-card">
+              <h3>Legal exposure</h3>
+              <p>Complaints, enforcement action, and procurement blockers can slow business growth.</p>
             </article>
-            <article className="info-card">
-              <h3>Readable reports</h3>
-              <p>Review scorecards, severity splits, artifacts, and issue-level details in one place.</p>
+            <article className="info-card emphasis-card">
+              <h3>Revenue loss</h3>
+              <p>Inaccessible journeys create drop-off in checkout, onboarding, and key conversion flows.</p>
             </article>
-            <article className="info-card">
-              <h3>Repeatable progress</h3>
-              <p>Track whether accessibility is getting better over time instead of treating scans as one-off snapshots.</p>
-            </article>
-          </div>
-        </section>
-
-        <section id="eaa" className="info-section alt">
-          <h2>EAA Readiness</h2>
-          <p>
-            WebAxe helps surface accessibility problems early so teams can move toward EAA and
-            broader accessibility compliance with less guesswork.
-          </p>
-          <div className="info-grid">
-            <article className="info-card">
-              <h3>Find legal risk</h3>
-              <p>Spot issues that create poor experiences and can become compliance pain later.</p>
-            </article>
-            <article className="info-card">
-              <h3>Share findings clearly</h3>
-              <p>Use screenshots, raw artifacts, and summaries to explain problems to others faster.</p>
-            </article>
-            <article className="info-card">
-              <h3>Support remediation</h3>
-              <p>Turn scans into concrete fixes with structured issue cards and suggestion flows.</p>
+            <article className="info-card emphasis-card">
+              <h3>Brand trust impact</h3>
+              <p>Poor accessibility signals weak product quality and can damage customer confidence.</p>
             </article>
           </div>
         </section>
 
-        <section id="about">
-          <h2>About WebAxe</h2>
-          <p>
-            WebAxe is a web-based accessibility scanning tool developed as a college project. It
-            helps website owners check whether their websites follow accessibility guidelines such
-            as WCAG 2.1 and EAA.
-          </p>
-          <p>
-            The goal of this project is to spread awareness about digital accessibility and help
-            developers build inclusive web applications.
-          </p>
-        </section>
-
-        <section id="how-it-works">
-          <h2>How It Works</h2>
-          <ol>
-            <li>User enters the website URL.</li>
-            <li>The system scans the website using accessibility rules.</li>
-            <li>Accessibility issues are detected and reported.</li>
-            <li>User receives suggestions to improve accessibility.</li>
-          </ol>
-        </section>
-
-        <section id="pricing" className="info-section">
-          <h2>Pricing</h2>
-          <p>
-            WebAxe is positioned as a flexible project you can use for quick scans today and expand
-            into richer reporting or team workflows later.
-          </p>
-          <div className="info-grid pricing-grid">
-            <article className="info-card">
-              <h3>Starter</h3>
-              <p className="price-tag">Free</p>
-              <p>Run scans, inspect issues, open artifacts, and review report summaries.</p>
-            </article>
-            <article className="info-card featured-plan">
-              <h3>Growth</h3>
-              <p className="price-tag">Best for repeat scans</p>
-              <p>Use history, dynamic reports, and suggestions to improve accessibility over time.</p>
-            </article>
-            <article className="info-card">
-              <h3>Team</h3>
-              <p className="price-tag">Custom</p>
-              <p>Adapt the project for demos, internal tooling, or a more polished workflow.</p>
-            </article>
-          </div>
-        </section>
-
-        <section id="contact" className="info-section alt">
-          <h2>Contact</h2>
-          <p>
-            Want to try a scan right now or review historical reports? Use the actions below to
-            jump straight into the working parts of the app.
-          </p>
-          <div className="contact-actions">
-            <Link to="/#hero" className="contact-btn primary-link">Start a new scan</Link>
-            <Link to="/history" className="contact-btn">Open scan history</Link>
-          </div>
-        </section>
-
-        <section id="more" className="info-section">
-          <h2>More Features</h2>
-          <p>
-            The project now includes dynamic score visuals, artifacts, suggestions, and scan-history
-            graphs so the reports page feels more complete and usable.
-          </p>
-          <div className="info-grid">
-            <article className="info-card">
-              <h3>Artifacts</h3>
-              <p>Open raw JSON and screenshots captured during each completed scan.</p>
-            </article>
-            <article className="info-card">
-              <h3>Analytics</h3>
-              <p>Use history views and trends to compare scores across repeated scans.</p>
-            </article>
-            <article className="info-card">
-              <h3>Suggestions</h3>
-              <p>Review remediation guidance side-by-side with the underlying accessibility findings.</p>
-            </article>
+        <section className="info-section">
+          <p className="section-label">Where is compliance required</p>
+          <h2>Where compliance is required.</h2>
+          <div className="compliance-list">
+            {complianceAreas.map((item) => (
+              <article className="compliance-pill" key={item}>
+                {item}
+              </article>
+            ))}
           </div>
         </section>
       </main>
 
-      <footer className="footer">
-        © {new Date().getFullYear()} WebAxe - Built for accessibility scanning
-        {lastUrl ? <span className="last-scan"> | Last scanned: {lastUrl}</span> : null}
-      </footer>
+      <Footer lastUrl={lastUrl} />
     </>
   );
 }
@@ -168,25 +249,7 @@ export default function App() {
   const [auth, setAuth] = useState(() => getStoredAuth());
 
   const location = useLocation();
-  const isScanPage =
-    location.pathname.startsWith("/scan") || location.pathname.startsWith("/history");
   const isAuthPage = location.pathname.startsWith("/auth");
-
-  useEffect(() => {
-    if (location.pathname !== "/") return;
-
-    if (!location.hash) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
-    const id = location.hash.slice(1);
-    const timer = setTimeout(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, [location]);
 
   function closeMenu() {
     setMenuOpen(false);
@@ -209,23 +272,43 @@ export default function App() {
         <header className="header">
           <div className="header-inner">
             <Link to="/" className="logo" onClick={closeMenu}>
-              <div className="logo-icon">A</div>
+              <div className="logo-icon">
+                <span className="logo-glyph">W</span>
+              </div>
               <span id="app-name">WebAxe</span>
             </Link>
 
-            <nav className="nav-links">
-              <Link to="/history">History</Link>
-              <Link to="/#wcag">WCAG</Link>
-              <Link to="/#eaa">EAA</Link>
-              <Link to="/#pricing">Pricing</Link>
+            <nav className="nav-links" aria-label="Primary navigation">
+              <NavLink to="/history" className={({ isActive }) => (isActive ? "active-nav" : "")}>
+                History
+              </NavLink>
+              <NavLink to="/wcag" className={({ isActive }) => (isActive ? "active-nav" : "")}>
+                WCAG
+              </NavLink>
+              <NavLink to="/eaa" className={({ isActive }) => (isActive ? "active-nav" : "")}>
+                EAA
+              </NavLink>
+              <NavLink to="/pricing" className={({ isActive }) => (isActive ? "active-nav" : "")}>
+                Pricing
+              </NavLink>
+              <NavLink to="/about" className={({ isActive }) => (isActive ? "active-nav" : "")}>
+                About
+              </NavLink>
               {!auth.token ? (
-                <Link to="/auth" className="get-started">Login</Link>
-              ) : null}
+                <NavLink to="/auth" className={({ isActive }) => `get-started${isActive ? " active-nav" : ""}`}>
+                  Login
+                </NavLink>
+              ) : (
+                <NavLink to="/account" className={({ isActive }) => (isActive ? "active-nav" : "")}>
+                  Account
+                </NavLink>
+              )}
 
               <button
                 className={`hamburger ${menuOpen ? "active" : ""}`}
                 onClick={() => setMenuOpen((open) => !open)}
                 aria-label="Menu"
+                aria-expanded={menuOpen}
               >
                 <span></span>
                 <span></span>
@@ -238,50 +321,39 @@ export default function App() {
 
       {!isAuthPage ? (
         <>
-          <div
-            className={`menu-overlay ${menuOpen ? "show" : ""}`}
-            onClick={closeMenu}
-          ></div>
+          <div className={`menu-overlay ${menuOpen ? "show" : ""}`} onClick={closeMenu}></div>
 
           <div className={`menu-panel ${menuOpen ? "open" : ""}`}>
-            <button
-              className="menu-close"
-              onClick={closeMenu}
-              aria-label="Close menu"
-            >
+            <button className="menu-close" onClick={closeMenu} aria-label="Close menu">
               x
             </button>
 
-            <Link to="/" onClick={closeMenu}>Home</Link>
-            <Link to="/history" onClick={closeMenu}>History</Link>
-            <Link to="/#about" onClick={closeMenu}>About</Link>
-            <Link to="/#wcag" onClick={closeMenu}>WCAG</Link>
-            <Link to="/#eaa" onClick={closeMenu}>EAA</Link>
-            <Link to="/#pricing" onClick={closeMenu}>Pricing</Link>
-            <Link to="/#contact" onClick={closeMenu}>Contact</Link>
-            <Link to="/#more" onClick={closeMenu}>More</Link>
+            <Link to="/" onClick={closeMenu}>
+              Home
+            </Link>
+            <Link to="/history" onClick={closeMenu}>
+              History
+            </Link>
             {auth.token ? (
-              <Link to="/account" onClick={closeMenu}>Account</Link>
+              <Link to="/account" onClick={closeMenu}>
+                Account
+              </Link>
             ) : (
-              <Link to="/auth" onClick={closeMenu}>Login</Link>
+              <Link to="/auth" onClick={closeMenu}>
+                Login
+              </Link>
             )}
           </div>
         </>
       ) : null}
 
       <Routes>
-        <Route
-          path="/auth"
-          element={<AuthPage token={auth.token} onAuthSuccess={handleAuthSuccess} />}
-        />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute token={auth.token}>
-              <HomeSections lastUrl={lastUrl} onScan={(url) => setLastUrl(url)} token={auth.token} />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/auth" element={<AuthPage token={auth.token} onAuthSuccess={handleAuthSuccess} />} />
+        <Route path="/" element={<HomeSections lastUrl={lastUrl} onScan={(url) => setLastUrl(url)} token={auth.token} />} />
+        <Route path="/wcag" element={<MarketingPage pageKey="wcag" />} />
+        <Route path="/eaa" element={<MarketingPage pageKey="eaa" />} />
+        <Route path="/pricing" element={<MarketingPage pageKey="pricing" />} />
+        <Route path="/about" element={<MarketingPage pageKey="about" />} />
         <Route path="/scan" element={<Navigate to="/" />} />
         <Route
           path="/scan/:scanId"

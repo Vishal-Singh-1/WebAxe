@@ -87,8 +87,10 @@ Set variables in `backend/.env` (API and worker load the same file from the back
 |----------|---------|
 | `MONGODB_URI` | MongoDB connection string for scan metadata. |
 | `PORT` | API port (default `3000`). |
-| `OPENAI_API_KEY` | If set, recommendation generation can call OpenAI for AI-assisted fixes. If unset, suggestions stay rule-based. |
-| `OPENAI_MODEL` | OpenAI model id (default `gpt-4o-mini`). |
+| `GEMINI_API_KEY` | Preferred API key for Gemini-powered AI suggestions. |
+| `GEMINI_MODEL` | Gemini model id (default `gemini-2.5-flash`). |
+| `OPENAI_API_KEY` | Backward-compatible fallback variable name for the same AI suggestion feature. |
+| `OPENAI_MODEL` | Backward-compatible fallback model variable. |
 | `AI_MAX_ISSUES` | Max number of issues sent to the model per report (default `5`, cost control). |
 | `AI_TIMEOUT_MS` | Timeout for the OpenAI request in ms (default `20000`). |
 

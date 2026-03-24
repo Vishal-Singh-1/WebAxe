@@ -131,6 +131,22 @@ function formatPrintDate(dateValue) {
   }
 }
 
+function buildRuleFallbackIssues(ruleResults = []) {
+  return ruleResults
+    .filter((rule) => ["fail", "warn"].includes(String(rule.status || "").toLowerCase()))
+    .map((rule) => ({
+      id: rule.id || "audit-finding",
+      impact: String(rule.status || "").toLowerCase() === "fail" ? "serious" : "moderate",
+      description:
+        rule.message ||
+        "This is a high-level audit finding from the scan rules rather than a direct axe element violation.",
+      helpUrl: null,
+      elementsAffected: 0,
+      wcag: {},
+      isAuditFinding: true
+    }));
+}
+
 function buildPdfHtml({ report, summary, issues, suggestions, screenshotUrl }) {
   const severityDistribution = summary?.severityDistribution || {};
   const severityItems = SEVERITY_ORDER.map((level) => `
@@ -517,14 +533,17 @@ export default function ScanResults({ token }) {
           elementsAffected: item?.occurrences || item?.nodes?.length || 0,
           wcag: item?.wcag || {}
         }));
+  const fallbackRuleIssues = issues.length === 0 ? buildRuleFallbackIssues(ruleResults) : [];
+  const displayedIssues = issues.length > 0 ? issues : fallbackRuleIssues;
+  const hasDisplayedIssues = displayedIssues.length > 0;
 
   useEffect(() => {
-    if (!scanId || issues.length === 0) return;
+    if (!scanId || !hasDisplayedIssues) return;
 
     const scanStatus = (report?.status || "").toLowerCase();
     if (scanStatus !== "completed") return;
 
-    const loadKey = `${scanId}|${issues.length}`;
+    const loadKey = `${scanId}|${displayedIssues.length}`;
     if (suggestionsLoadedKeyRef.current === loadKey) return;
 
     let cancelled = false;
@@ -598,7 +617,7 @@ export default function ScanResults({ token }) {
     return () => {
       cancelled = true;
     };
-  }, [scanId, report?.status, issues.length, token]);
+  }, [scanId, report?.status, hasDisplayedIssues, displayedIssues.length, token]);
 
   useEffect(() => {
     const url = report?.url;
@@ -659,10 +678,6 @@ export default function ScanResults({ token }) {
   const totalIssues = summary.totalIssues ?? issues.length;
   const userFailMsg = report.userMessage || "";
   const failExtra = failureContextLine(report.errorType);
-  const showAiFailureHint =
-    suggestionsMeta?.aiEnabled === true &&
-    suggestionsMeta?.aiUsed === false &&
-    suggestionsMeta?.aiReason;
   const scoreStyle = buildScoreStyle(summary.healthScore ?? 100);
   const donutStyle = buildDonutStyle(severityDistribution);
   const categoryItems = CATEGORY_ORDER.filter((key) => categoryScores[key]).map((key) => ({
@@ -905,14 +920,20 @@ export default function ScanResults({ token }) {
 
       <div className="card issues">
         <h3>Issues List</h3>
-        {issues.length === 0 ? (
+        {!hasDisplayedIssues ? (
           <p>
             {isFailed
               ? "No issues were recorded before the scan stopped."
               : "No issues yet. Waiting for scanner output..."}
           </p>
         ) : (
-          issues.map((issue, index) => (
+          <>
+            {issues.length === 0 ? (
+              <p className="history-blurb">
+                No direct axe issues were detected for this scan. Showing custom audit findings instead.
+              </p>
+            ) : null}
+            {displayedIssues.map((issue, index) => (
             <div className="issue-card" key={`${issue.id}-${index}`}>
               <div className="issue-top">
                 <div className="issue-title-row">
@@ -920,7 +941,9 @@ export default function ScanResults({ token }) {
                   <span className={`badge ${issue.impact || "minor"}`}>{issue.impact || "minor"}</span>
                   {issue?.wcag?.level ? <span className="wcag">WCAG: {issue.wcag.level}</span> : null}
                 </div>
-                <span className="issue-count">{issue.elementsAffected || 0} elements</span>
+                <span className="issue-count">
+                  {issue.isAuditFinding ? "Audit finding" : `${issue.elementsAffected || 0} elements`}
+                </span>
               </div>
               <div className="issue-middle">
                 <p>{issue.description || "No description available."}</p>
@@ -933,54 +956,38 @@ export default function ScanResults({ token }) {
                 </div>
               ) : null}
             </div>
-          ))
+            ))}
+          </>
         )}
       </div>
 
       {!isFailed &&
       status.toLowerCase() === "completed" &&
       report.artifacts &&
-      (report.artifacts.rawReportPath || report.artifacts.screenshotPath) ? (
+      report.artifacts.screenshotPath ? (
         <div className="card artifacts-card">
           <div className="section-heading">
             <div>
-              <h3>Artifacts</h3>
+              <h3>Screenshot</h3>
               <p className="artifact-hint">
-                Everything captured during the scan, styled to sit with the rest of the report.
+                Check the rendered page snapshot captured during the scan.
               </p>
             </div>
           </div>
-          <div className="artifact-grid">
-            {report.artifacts.rawReportPath ? (
-              <article className="artifact-tile">
-                <span className="artifact-label">Data export</span>
-                <h4>Raw axe report</h4>
-                <p>Open the original JSON output behind this accessibility report.</p>
-                <a
-                  className="artifact-link"
-                  href={`${API_BASE}${report.artifacts.rawReportPath}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View JSON
-                </a>
-              </article>
-            ) : null}
-            {report.artifacts.screenshotPath ? (
-              <article className="artifact-tile">
-                <span className="artifact-label">Visual capture</span>
-                <h4>Full-page screenshot</h4>
-                <p>Check the rendered page snapshot captured alongside the audit.</p>
-                <a
-                  className="artifact-link"
-                  href={`${API_BASE}${report.artifacts.screenshotPath}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open screenshot
-                </a>
-              </article>
-            ) : null}
+          <div className="artifact-grid artifact-grid-single">
+            <article className="artifact-tile">
+              <span className="artifact-label">Visual capture</span>
+              <h4>Full-page screenshot</h4>
+              <p>Open the page snapshot captured alongside the report.</p>
+              <a
+                className="artifact-link"
+                href={`${API_BASE}${report.artifacts.screenshotPath}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open screenshot
+              </a>
+            </article>
           </div>
         </div>
       ) : null}
@@ -990,7 +997,7 @@ export default function ScanResults({ token }) {
 
         {isFailed ? (
           <p>Fix suggestions are not generated for failed scans.</p>
-        ) : issues.length === 0 ? (
+        ) : !hasDisplayedIssues ? (
           <p>No accessibility issues were found, so there is nothing to suggest.</p>
         ) : suggestionsLoading ? (
           <p>Loading suggestions...</p>
@@ -1004,9 +1011,6 @@ export default function ScanResults({ token }) {
               <div className="issue-top">
                 <div className="issue-title-row">
                   <strong>{item.issueId || "unknown-rule"}</strong>
-                  {item.generatedBy === "ai" ? (
-                    <span className={`badge ${item.impact || "minor"}`}>ai</span>
-                  ) : null}
                 </div>
               </div>
               <div className="issue-middle">
@@ -1023,15 +1027,6 @@ export default function ScanResults({ token }) {
             </div>
           ))
         )}
-
-        {suggestionsMeta && !isFailed && issues.length > 0 ? (
-          <div className="suggestions-meta">
-            {suggestionsMeta.aiUsed ? <p>Source: AI-assisted</p> : null}
-            {showAiFailureHint ? (
-              <p className="ai-key-hint">AI did not run: {suggestionsMeta.aiReason}</p>
-            ) : null}
-          </div>
-        ) : null}
       </div>
 
       <div className="card history-card">

@@ -20,14 +20,12 @@ const RECOMMENDATIONS_FILENAME = "recommendations.json";
 /** Legacy filename from earlier versions; still read if present. */
 const LEGACY_RECOMMENDATIONS_LATEST = "latest-recommendations.json";
 
-function hasUsableOpenAiKey() {
-  const key = (process.env.OPENAI_API_KEY || "").trim();
-  if (!key) return false;
-  return !["your_key_here", "your-api-key-here", "replace_me"].includes(key.toLowerCase());
+function hasUsableAiKey() {
+  return false;
 }
 
 function shouldRefreshCachedRecommendationReport(parsed) {
-  const aiEnabledNow = hasUsableOpenAiKey();
+  const aiEnabledNow = hasUsableAiKey();
   const aiWasEnabled = parsed?.meta?.aiEnabled === true;
   const aiWasUsed = parsed?.meta?.aiUsed === true;
 
@@ -258,7 +256,7 @@ router.get("/scans/:id", async (req, res) => {
 
   res.json({
     ...formattedReport,
-    aiConfigured: hasUsableOpenAiKey()
+    aiConfigured: hasUsableAiKey()
   });
 });
 
@@ -377,17 +375,17 @@ router.post("/scans/:id/recommendations/raw", async (req, res) => {
   });
 
   recommendationReport.meta = {
-    aiEnabled: hasUsableOpenAiKey(),
+    aiEnabled: hasUsableAiKey(),
     aiUsed: aiResult.aiUsed,
     aiReason: aiResult.reason,
-    aiModel: process.env.OPENAI_MODEL || "gpt-4o-mini",
+    aiModel: null,
     aiIssueLimit: maxAiIssues
   };
 
   recommendationReport.recommendations = recommendationReport.recommendations.map((item, index) => {
     const aiData = aiResult.suggestionsByIssueId[item.issueId];
     const aiProcessed = index < maxAiIssues && !!aiData;
-    const generatedBy = aiResult.aiUsed ? "ai" : "rule-based";
+    const generatedBy = aiProcessed ? "ai" : "rule-based";
 
     return {
       ...item,
@@ -439,6 +437,14 @@ router.get("/scans/:id/recommendations/raw/latest", async (req, res) => {
 
   const raw = await fs.readFile(pathToRead, "utf-8");
   const parsed = JSON.parse(raw);
+
+  if (shouldRefreshCachedRecommendationReport(parsed)) {
+    return res.status(404).json({
+      error: "Cached recommendation report needs refresh",
+      hint: "Generate a new recommendation report to use AI suggestions."
+    });
+  }
+
   res.json(parsed);
 });
 
