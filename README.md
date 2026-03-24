@@ -1,113 +1,248 @@
-# WebAxe
+# 🌐 WebAxe — Accessibility Audit Platform
 
-**WebAxe** — a lightweight, real-browser accessibility scanner for websites.  
-Runs Playwright + `axe-core` in a background worker, stores scan metadata in MongoDB, and captures reports & screenshots for inspection via a simple web UI.
+**WebAxe** is a full-stack accessibility auditing platform that scans real websites using a headless browser, detects WCAG issues, and presents results through a clean, modern dashboard.
 
-> Built as a **portfolio-grade system** demonstrating backend architecture (API + worker + DB) with a React frontend.
-
----
-
-## Demo / Quick links
-- Backend API: `http://localhost:3000`
-- Frontend (dev): `http://localhost:5173` (Vite)
-- Health check: `GET /` → `{ status: "WebAxe backend running" }`
+It combines **Playwright + axe-core**, **MongoDB scan tracking**, and a **React-based UI** to deliver a complete accessibility analysis workflow.
 
 ---
 
-## What WebAxe does
-1. Frontend submits a website URL
-2. Backend queues a scan in MongoDB
-3. Worker process:
-   - launches a real Chromium browser
-   - injects `axe-core`
-   - runs accessibility checks
-   - captures full report + screenshot
-4. Results are persisted and available via API
+## 🚀 Features
+
+* 🔍 Real browser scanning with Playwright (Chromium)
+* ♿ Accessibility audits powered by axe-core
+* 📊 Clean dashboard with scoring & severity breakdown
+* 🧠 Rule-based remediation suggestions (no AI dependency required)
+* 🗂 Scan history + trend comparison
+* 🔐 JWT-based authentication
+* ⚙️ Background worker architecture
+* 📸 Full-page screenshots + raw reports
+* 📄 PDF report export
 
 ---
 
-## Features (current)
-- Real browser-based accessibility scans (Playwright + `axe-core`)
-- Background worker architecture (separate from API)
-- MongoDB-backed scan queue & lifecycle tracking
-- Scan states: `queued → running → completed / failed`
-- Error classification (timeouts, CSP blocks, invalid URLs, etc.)
-- Stores:
-  - full `axe` JSON report
-  - full-page screenshot
-- REST API to:
-  - create scans
-  - fetch scan history
-  - fetch scan status
-  - re-run scans
-- Frontend UI to trigger scans (React)
+## 🧱 Tech Stack
+
+**Frontend**
+
+* React (Vite)
+* CSS
+
+**Backend**
+
+* Node.js
+* Express
+
+**Worker**
+
+* Playwright
+* axe-core
+
+**Database**
+
+* MongoDB (Mongoose)
+
+**Auth**
+
+* JWT
 
 ---
 
-## Architecture overview
+## 🏗 Architecture
 
+```
 Frontend (React)
-|
-v
+      ↓
 Backend API (Express)
-|
-v
-MongoDB (scan metadata, status, timings)
-|
-v
+      ↓
+MongoDB (Scan metadata)
+      ↓
 Worker (Playwright + axe-core)
-|
-v
-Local / Cloud Storage (reports & screenshots)
-
-
-- **MongoDB** stores only metadata (JSON, small & queryable)
-- **Filesystem / object storage** stores heavy artifacts
-- Worker and API run as **separate Node processes**
+      ↓
+Storage (Reports + screenshots)
+```
 
 ---
 
-## Tech stack
-- **Frontend:** React (Vite), plain CSS
-- **Backend:** Node.js, Express
-- **Worker:** Playwright (Chromium)
-- **Accessibility engine:** `axe-core`
-- **Database:** MongoDB (Mongoose)
-- **Artifacts:** Local filesystem (MVP)  
-  → S3 / Cloudflare R2 recommended for production
-- **Dev tools:** MongoDB Compass / VS Code MongoDB extension
+## ⚙️ Setup Instructions
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/your-username/webaxe.git
+cd webaxe
+```
 
 ---
 
-## Configuration
+### 2. Backend setup
 
-Set variables in `backend/.env` (API and worker load the same file from the backend directory).
+```bash
+cd backend
+npm install
+```
 
-| Variable | Purpose |
-|----------|---------|
-| `MONGODB_URI` | MongoDB connection string for scan metadata. |
-| `PORT` | API port (default `3000`). |
-| `GEMINI_API_KEY` | Preferred API key for Gemini-powered AI suggestions. |
-| `GEMINI_MODEL` | Gemini model id (default `gemini-2.5-flash`). |
-| `OPENAI_API_KEY` | Backward-compatible fallback variable name for the same AI suggestion feature. |
-| `OPENAI_MODEL` | Backward-compatible fallback model variable. |
-| `AI_MAX_ISSUES` | Max number of issues sent to the model per report (default `5`, cost control). |
-| `AI_TIMEOUT_MS` | Timeout for the OpenAI request in ms (default `20000`). |
+Create `.env` file:
 
-**Worker (Playwright + axe):** the worker creates the browser with `bypassCSP: true` so `axe-core` can be injected on sites with strict Content Security Policy. That applies only to the automated Chromium session, not to end users’ browsers.
+```
+PORT=3000
+MONGO_URI=your_mongodb_connection
+JWT_SECRET=your_secret_key
 
-**Static artifacts:** the API serves `backend/storage` at `GET /storage/...`. Raw JSON and screenshots are linked as `/storage/<scanId>/raw-report.json` and `screenshot.png`. The Vite app uses `VITE_API_URL` (see below) so those links match your deployed API host.
+# Optional (for AI integration)
+GEMINI_API_KEY=your_gemini_key
+GEMINI_MODEL=gemini-1.5-flash
+```
 
-**Frontend:** optional `webaxe-frontend/.env`:
+Run backend:
 
-| Variable | Purpose |
-|----------|---------|
-| `VITE_API_URL` | Base URL of the backend (e.g. `http://localhost:3000`). Defaults to `http://localhost:3000` if omitted. |
+```bash
+npm run dev
+```
 
-### Analytics API (Week 6)
+---
 
-- `GET /api/scans/history/recent?limit=100` — lightweight list of recent scans (totals, health, grades).
-- `GET /api/scans/history/by-url?url=` — all scans for a normalized URL, chronological (for trends).
-- `GET /api/scans/compare?before=&after=` — two scan IDs; returns summaries and deltas (issues, health, severity).
+### 3. Worker setup
 
-Each new scan stores `urlNormalized` (derived from the submitted URL) so repeated scans of the same site group together. Existing documents get `urlNormalized` the next time they are saved.
+```bash
+cd worker
+npm install
+npm run start
+```
+
+---
+
+### 4. Frontend setup
+
+```bash
+cd webaxe-frontend
+npm install
+npm run dev
+```
+
+---
+
+## 🌍 Local URLs
+
+* Frontend: http://localhost:5173
+* Backend: http://localhost:3000
+* Health Check: `GET /`
+
+---
+
+## 📡 API Overview
+
+### Scan APIs
+
+* `POST /api/scans` → Start scan
+* `GET /api/scans/:id` → Get report
+* `GET /api/scans/:id/status` → Get status
+* `POST /api/scans/:id/rerun` → Re-run scan
+
+### History APIs
+
+* `GET /api/scans/history/recent`
+* `GET /api/scans/history/by-url`
+* `GET /api/scans/compare`
+
+### Auth APIs
+
+* `POST /api/auth/register`
+* `POST /api/auth/login`
+
+---
+
+## 📊 Report Includes
+
+* Accessibility score & grade
+* Severity distribution
+* Issue list
+* Category-based scoring
+* Rule-based suggestions
+* Full-page screenshot
+* Historical trends
+* PDF export functionality
+
+---
+
+## 🤖 Gemini API (Optional)
+
+WebAxe **does NOT require AI** to function.
+
+However, you can optionally integrate **Google Gemini API (free tier available)** for:
+
+* AI-powered fix suggestions
+* Issue explanations
+* Enhanced reporting
+
+### Current Status
+
+* Gemini is **optional**
+* System uses **deterministic rule-based suggestions by default**
+
+### If enabled:
+
+* Uses Gemini free tier (with limits)
+* Requires `GEMINI_API_KEY`
+
+---
+
+## 🔐 Security Notes
+
+* Never commit `.env`
+* Keep API keys private
+* Use a strong `JWT_SECRET`
+
+---
+
+## 📈 Project Status
+
+✅ Fully working full-stack application
+✅ Real browser scanning
+✅ Authentication system
+✅ Scan history + analytics
+✅ PDF export support
+✅ Production-ready architecture (dev mode)
+
+---
+
+## 🔮 Future Improvements
+
+* Scheduled scans
+* Team workspaces
+* Cloud storage (S3 / R2)
+* AI-assisted explanations (Gemini integration)
+* Advanced accessibility trend analytics
+
+---
+
+## 💡 Why WebAxe?
+
+WebAxe focuses on making accessibility:
+
+* Easier to understand
+* Easier to track over time
+* More actionable for developers
+
+---
+
+## 🧪 Example Flow
+
+1. User submits URL
+2. Scan is queued
+3. Worker runs Playwright + axe-core
+4. Results stored in MongoDB
+5. Dashboard displays report + trends
+
+---
+
+## 🙌 Author
+
+Built as a portfolio project to demonstrate:
+
+* Full-stack architecture
+* Background workers
+* Accessibility tooling
+* Scalable design patterns
+
+---
+
