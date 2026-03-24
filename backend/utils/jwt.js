@@ -15,7 +15,12 @@ function fromBase64Url(value) {
 }
 
 function getJwtSecret() {
-  return process.env.JWT_SECRET || "webaxe-dev-secret-change-me";
+  const secret = (process.env.JWT_SECRET || "").trim();
+  if (!secret) {
+    throw new Error("JWT_SECRET is required");
+  }
+
+  return secret;
 }
 
 function signSegment(segment) {
