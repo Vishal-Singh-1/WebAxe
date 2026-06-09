@@ -234,29 +234,11 @@ async function collectPageSignals(page) {
 async function processScan(scan) {
   console.log(`Processing scan: ${scan.scanId}`);
 
-  const browser = await chromium.launch({
-    channel: "chrome",
-    headless: true
-  });
-
-  const context = await browser.newContext({ bypassCSP: true });
-  const page = await context.newPage();
   const consoleErrors = [];
   const requestFailures = [];
   const startTime = Date.now();
   let mainResponse = null;
-
-  page.on("console", (msg) => {
-    if (msg.type() !== "error") return;
-    consoleErrors.push(msg.text());
-  });
-
-  page.on("requestfailed", (request) => {
-    requestFailures.push({
-      url: request.url(),
-      errorText: request.failure()?.errorText || "Request failed"
-    });
-  });
+  let browser = null;
 
   await Scan.findOneAndUpdate(
     { scanId: scan.scanId },
@@ -268,6 +250,25 @@ async function processScan(scan) {
   );
 
   try {
+    browser = await chromium.launch({
+      headless: true
+    });
+
+    const context = await browser.newContext({ bypassCSP: true });
+    const page = await context.newPage();
+
+    page.on("console", (msg) => {
+      if (msg.type() !== "error") return;
+      consoleErrors.push(msg.text());
+    });
+
+    page.on("requestfailed", (request) => {
+      requestFailures.push({
+        url: request.url(),
+        errorText: request.failure()?.errorText || "Request failed"
+      });
+    });
+
     mainResponse = await page.goto(scan.url, {
       waitUntil: "domcontentloaded",
       timeout: 30000
@@ -358,7 +359,7 @@ async function processScan(scan) {
 
     console.error(`Scan failed (${scan.scanId}):`, err.message);
   } finally {
-    await browser.close();
+    await browser?.close();
   }
 }
 
