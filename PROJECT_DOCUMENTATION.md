@@ -104,6 +104,8 @@ Responsibilities:
 - store raw JSON reports and screenshots
 - update scan documents with final results or failure states
 
+The API and worker run as separate child processes under `npm start`. The local supervisor restarts only the process that exits, using capped exponential backoff; a worker crash no longer shuts down the API.
+
 ## 5. Repository Structure
 
 ```text
@@ -301,13 +303,9 @@ This makes it easier to track whether accessibility is improving over time.
 
 The backend supports generation of recommendation reports per scan. These are saved in storage and loaded by the report UI.
 
-The current implementation:
+Recommendation reports use the Gemini API for issue-specific explanations, remediation steps, and optional code examples when `GEMINI_API_KEY` is configured. The key is read only by the backend and sent to Google in the API request header. The model defaults to `gemini-2.5-flash` and can be changed with `GEMINI_MODEL`.
 
-- always supports rule-based suggestions
-- includes a placeholder path for AI-based suggestions
-- currently reports no usable AI key because `hasUsableAiKey()` returns `false`
-
-As the code stands today, recommendation generation is effectively rule-based even though the system is structured for future AI enhancement.
+The backend sends a limited set of normalized axe issue details (up to `AI_MAX_ISSUES`, default `5`) to Gemini. Remaining issues receive general accessibility guidance. If the key is missing, Gemini times out, or the API returns an error, report generation still succeeds with general guidance and records the reason in report metadata. A cached report created before Gemini was configured is regenerated on the next report request.
 
 ## 7. Scan Lifecycle
 
@@ -369,6 +367,13 @@ Key fields:
 - `audit`
 - `artifacts`
 - `timings`
+- `attempts`, `maxAttempts`, and `nextAttemptAt` for bounded retries
+- `workerId` and `leaseExpiresAt` for atomic claims and stale-job recovery
+- `scheduleId` and `scheduledFor` for idempotent scheduled occurrences
+
+### 8.3 Scheduled Scans
+
+Schedules are stored separately from scan executions and can be managed from either Home or Scan History. A schedule can run once at a selected time or repeat at an interval from 1–720 hours between a first-run time and an optional end time. The worker materializes due runs as normal queued scans. A deterministic occurrence ID prevents a worker restart or multiple workers from creating the same scheduled occurrence twice. If the worker was offline for multiple intervals, missed intervals are skipped and one due occurrence is queued; bounded schedules expire at their end time.
 
 ### Stored Summary
 
@@ -507,6 +512,10 @@ All protected routes require `Authorization: Bearer <token>`.
 - `GET /api/scans/:id/status`
 - `POST /api/scans/:id/rerun`
 - `GET /api/scan-profiles`
+- `GET /api/schedules`
+- `POST /api/schedules` — create a one-time or recurring scan using `url`, `sector`, `scheduleType`, future ISO `startsAt`, and (for recurring schedules) `intervalHours` plus optional ISO `endsAt`
+- `PATCH /api/schedules/:scheduleId` — pause or resume with `{ "active": boolean }`
+- `DELETE /api/schedules/:scheduleId`
 
 ### History and Analytics
 
@@ -598,6 +607,8 @@ Optional or implied variables:
 
 - `PORT`
 - `AI_MAX_ISSUES`
+- `GEMINI_API_KEY` (optional; obtain a key from Google AI Studio and keep it private)
+- `GEMINI_MODEL` (optional; defaults to `gemini-2.5-flash`)
 
 The frontend supports:
 
@@ -623,12 +634,7 @@ npm install
 npm start
 ```
 
-Worker:
-
-```bash
-cd backend
-node worker.js
-```
+`npm start` supervises the API and worker independently. For separate terminals or process-manager deployments, use `npm run start:api` and `npm run start:worker`. The API can restart without stopping the worker.
 
 Frontend:
 
@@ -658,6 +664,8 @@ The worker classifies several common failures into user-facing categories:
 
 These are surfaced in the scan report UI with readable explanations so the user knows why a scan did not complete.
 
+The job queue uses an atomic MongoDB claim and a renewable two-minute lease. On startup and periodically, the worker recovers expired `running` jobs. Temporary navigation failures and unknown runtime failures are retried up to three attempts with exponential delays (15 seconds, then 30 seconds); invalid URLs, access-denied responses, and CSP blocks fail without retry. Scheduled scans are created by the worker from persisted schedules, so they remain due across API or worker restarts.
+
 ## 18. Current Strengths
 
 - clear split between UI, API, and worker responsibilities
@@ -672,10 +680,11 @@ These are surfaced in the scan report UI with readable explanations so the user 
 
 These points reflect the repository in its current form:
 
-- AI recommendation support is scaffolded but effectively disabled because the backend reports no usable AI key
+- AI fixes depend on a valid `GEMINI_API_KEY`; reports fall back to general accessibility guidance when Gemini cannot be used
 - the backend `GET /api/scans` route returns all scans without filtering by current user, so scan ownership is not enforced at the data level
 - the scan schema also does not currently store a user reference
-- running the API alone is not enough; the worker must also run or scans will remain queued
+- running only the API is not enough; the worker must also be running for queued and scheduled scans to execute
+- scheduled scan intervals are fixed-hour intervals (up to 30 days), not calendar-time rules with timezone/DST handling
 - the frontend README is still the default Vite template and does not yet describe the actual product
 - some source files contain minor encoding artifacts in strings/comments, which do not change the main behavior but should be cleaned up later
 

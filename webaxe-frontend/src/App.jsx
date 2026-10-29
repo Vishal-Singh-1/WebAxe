@@ -5,6 +5,7 @@ import ScanResults from "./components/ScanResults";
 import ScanHistory from "./components/ScanHistory";
 import Hero from "./components/Hero";
 import Features from "./components/Features";
+import ScheduledScans from "./components/ScheduledScans.jsx";
 import AuthPage from "./components/AuthPage";
 import AccountPage from "./components/AccountPage";
 import { clearAuth, getStoredAuth, saveAuth } from "./auth";
@@ -183,6 +184,7 @@ function HomeSections({ lastUrl, onScan, token }) {
     <>
       <main className="marketing-main">
         <Hero onScan={onScan} token={token} />
+        <ScheduledScans token={token} />
         <Features />
 
         <section className="info-section split-section">
@@ -279,6 +281,7 @@ export default function App() {
             </Link>
 
             <nav className="nav-links" aria-label="Primary navigation">
+              <NavLink to="/" end className={({ isActive }) => (isActive ? "active-nav" : "")}>Home</NavLink>
               <NavLink to="/history" className={({ isActive }) => (isActive ? "active-nav" : "")}>
                 History
               </NavLink>
@@ -328,12 +331,15 @@ export default function App() {
               x
             </button>
 
-            <Link to="/" onClick={closeMenu}>
+            <NavLink to="/" end className={({ isActive }) => (isActive ? "active-nav" : "")} onClick={closeMenu}>
               Home
-            </Link>
-            <Link to="/history" onClick={closeMenu}>
+            </NavLink>
+            <NavLink to="/history" className={({ isActive }) => (isActive ? "active-nav" : "")} onClick={closeMenu}>
               History
-            </Link>
+            </NavLink>
+            <NavLink to="/about" className={({ isActive }) => (isActive ? "active-nav" : "")} onClick={closeMenu}>
+              About
+            </NavLink>
             {auth.token ? (
               <Link to="/account" onClick={closeMenu}>
                 Account

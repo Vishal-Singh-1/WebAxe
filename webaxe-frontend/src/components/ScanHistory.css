@@ -1,23 +1,25 @@
 .scan-history-page {
-  max-width: 1100px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 20px 80px;
+  padding: 40px 20px 60px;
 }
 
 .history-header h1 {
   margin: 0 0 8px;
-  font-size: 1.75rem;
+  color: #1e2c2f;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.05em;
 }
 
 .history-lead {
-  color: #555;
+  color: #53656a;
   margin: 0 0 12px;
   line-height: 1.5;
 }
 
 .history-back {
   display: inline-block;
-  color: #4a3f8c;
+  color: #114b5f;
   font-weight: 600;
   text-decoration: none;
   margin-bottom: 24px;
@@ -32,20 +34,24 @@
 }
 
 .card-like {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 18px;
-  padding: 22px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(17, 75, 95, 0.08);
+  background: rgba(255, 252, 248, 0.88);
+  border-radius: 26px;
+  padding: 28px;
+  box-shadow: 0 20px 44px rgba(17, 75, 95, 0.08);
+  backdrop-filter: blur(12px);
 }
 
 .history-section h2 {
   margin-top: 0;
-  font-size: 1.25rem;
+  color: #1e2c2f;
+  font-size: 1.45rem;
+  letter-spacing: -0.035em;
 }
 
 .section-hint {
   font-size: 0.9rem;
-  color: #666;
+  color: #64777c;
   margin: 0 0 16px;
 }
 
@@ -66,9 +72,21 @@
 .history-table th,
 .history-table td {
   text-align: left;
-  padding: 10px 10px 10px 0;
-  border-bottom: 1px solid #eee;
+  padding: 13px 12px 13px 0;
+  border-bottom: 1px solid rgba(17, 75, 95, 0.1);
   vertical-align: top;
+}
+
+.history-table th {
+  color: #52666a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.history-table tbody tr:hover {
+  background: rgba(220, 236, 241, 0.34);
 }
 
 .cell-url {
@@ -103,13 +121,19 @@
 }
 
 .table-link {
-  color: #4a3f8c;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 5px 12px;
+  border-radius: 10px;
+  background: var(--button-bg);
+  color: var(--button-text);
+  font-weight: 700;
   text-decoration: none;
 }
 
 .table-link:hover {
-  text-decoration: underline;
+  background: var(--button-hover);
 }
 
 .url-trend-form {
@@ -124,7 +148,7 @@
   min-width: 220px;
   padding: 10px 14px;
   border-radius: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(17, 75, 95, 0.16);
   font-size: 1rem;
 }
 
@@ -132,8 +156,8 @@
   padding: 10px 18px;
   border-radius: 10px;
   border: none;
-  background: #6b5b95;
-  color: #fff;
+  background: var(--button-bg);
+  color: var(--button-text);
   font-weight: 600;
   cursor: pointer;
 }
@@ -145,7 +169,7 @@
 
 .series-meta {
   font-size: 0.85rem;
-  color: #555;
+  color: #64777c;
   margin: 0 0 16px;
 }
 
@@ -178,7 +202,7 @@
 
 .axis-y {
   font-size: 10px;
-  fill: #666;
+  fill: #64777c;
 }
 
 .trend-legend {
@@ -190,8 +214,8 @@
 
 .trend-legend-item {
   font-size: 0.75rem;
-  color: #555;
-  background: #f5f4fa;
+  color: #52666a;
+  background: #edf3f1;
   padding: 4px 8px;
   border-radius: 6px;
 }
@@ -199,7 +223,7 @@
 .trend-chart.empty {
   padding: 12px;
   border-radius: 12px;
-  background: #fafafa;
+  background: #f1f6f4;
 }
 
 .compare-form {
@@ -216,14 +240,14 @@
   gap: 6px;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #444;
+  color: #344b54;
 }
 
 .compare-form select {
   min-width: 260px;
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(17, 75, 95, 0.16);
   font-size: 0.85rem;
 }
 
@@ -231,8 +255,8 @@
   padding: 10px 20px;
   border-radius: 10px;
   border: none;
-  background: #3aa76d;
-  color: #fff;
+  background: var(--button-bg);
+  color: var(--button-text);
   font-weight: 600;
   cursor: pointer;
   height: fit-content;
@@ -251,10 +275,10 @@
 }
 
 .compare-card {
-  background: #f8f8fc;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 16px;
   padding: 16px;
-  border: 1px solid #e8e6f2;
+  border: 1px solid rgba(17, 75, 95, 0.1);
 }
 
 .compare-card h3 {
@@ -274,8 +298,8 @@
 }
 
 .compare-delta {
-  background: #fffef5;
-  border-color: #e8d89a;
+  background: #f4f8f5;
+  border-color: rgba(17, 75, 95, 0.14);
 }
 
 .compare-delta .good {
@@ -284,4 +308,140 @@
 
 .compare-delta .bad {
   color: #c41c1c;
+}
+.scheduled-scans .schedule-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(140px, 1fr) minmax(210px, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.marketing-main > .scheduled-scans {
+  max-width: 1180px;
+  margin: 26px auto 36px;
+}
+
+.schedule-login-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--button-bg);
+  color: var(--button-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.schedule-form label {
+  display: grid;
+  gap: 7px;
+  color: #344b54;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.schedule-form input,
+.schedule-form select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid rgba(17, 75, 95, 0.16);
+  border-radius: 8px;
+  background: white;
+  color: #1e2c2f;
+  font: inherit;
+}
+
+.schedule-form button,
+.schedule-actions button {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--button-bg);
+  color: var(--button-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.schedule-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.schedule-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.schedule-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid rgba(17, 75, 95, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.schedule-list li > div:first-child {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.schedule-list strong {
+  overflow-wrap: anywhere;
+}
+
+.schedule-list span {
+  color: #64777c;
+  font-size: 0.88rem;
+}
+
+.schedule-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.schedule-actions .schedule-delete {
+  background: var(--button-bg);
+  color: var(--button-text);
+}
+
+.schedule-message {
+  color: #246b47;
+}
+
+@media (max-width: 800px) {
+  .scheduled-scans .schedule-form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .scan-history-page {
+    padding: 24px 12px 48px;
+  }
+
+  .card-like {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .scheduled-scans .schedule-form {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

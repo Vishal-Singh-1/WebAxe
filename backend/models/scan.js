@@ -9,6 +9,13 @@ const ScanSchema = new mongoose.Schema(
     urlNormalized: { type: String, index: true },
     status: String,
     phase: String,
+    attempts: { type: Number, default: 0 },
+    maxAttempts: { type: Number, default: 3 },
+    nextAttemptAt: Date,
+    workerId: String,
+    leaseExpiresAt: Date,
+    scheduleId: String,
+    scheduledFor: Date,
 
     scanProfile: {
       key: { type: String, default: "general" },
@@ -61,6 +68,19 @@ const ScanSchema = new mongoose.Schema(
     strict: true // only defined fields allowed
   }
 );
+
+ScanSchema.index(
+  { scheduleId: 1, scheduledFor: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      scheduleId: { $type: "string" },
+      scheduledFor: { $type: "date" }
+    }
+  }
+);
+ScanSchema.index({ status: 1, "timings.createdAt": 1 });
+ScanSchema.index({ status: 1, leaseExpiresAt: 1 });
 
 ScanSchema.pre("save", function setUrlNormalized() {
   if (this.url) {

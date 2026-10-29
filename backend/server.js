@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -8,6 +9,7 @@ import { loadBackendEnv } from "./config/loadEnv.js";
 import authRoutes from "./routes/auth.routes.js";
 import scansRoutes from "./routes/scans.routes.js";
 import workerRoutes from "./routes/worker.routes.js";
+import schedulesRoutes from "./routes/schedules.routes.js";
 import { requireAuth } from "./middleware/auth.js";
 
 loadBackendEnv();
@@ -28,12 +30,27 @@ app.use("/storage", express.static(STORAGE_DIR));
 
 app.use("/api", authRoutes);
 app.use("/api", requireAuth, scansRoutes);
+app.use("/api", requireAuth, schedulesRoutes);
 app.use("/api", requireAuth, workerRoutes);
 
 app.get("/", (req, res) => {
   res.json({ status: "WebAxe backend running" });
 });
 
-app.listen(port, () => {
+const httpServer = app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+
+let shuttingDown = false;
+async function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  httpServer.close(async () => {
+    await mongoose.disconnect();
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 30_000).unref();
+}
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);

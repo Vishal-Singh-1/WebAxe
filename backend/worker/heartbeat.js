@@ -8,15 +8,19 @@ const __dirname = path.dirname(__filename);
 const STORAGE_DIR = path.join(__dirname, "../storage");
 const WORKER_FILE = path.join(STORAGE_DIR, "worker.json");
 
-export async function startHeartbeat(interval = 5000) {
+export async function startHeartbeat(interval = 5000, workerId = null, getCurrentScanId = () => null) {
   await mkdir(STORAGE_DIR, { recursive: true });
 
-  setInterval(async () => {
+  const writeHeartbeat = async () => {
     try {
       await writeFile(
         WORKER_FILE,
         JSON.stringify(
-          { lastHeartbeat: new Date().toISOString() },
+          {
+            workerId,
+            currentScanId: getCurrentScanId(),
+            lastHeartbeat: new Date().toISOString()
+          },
           null,
           2
         )
@@ -24,5 +28,10 @@ export async function startHeartbeat(interval = 5000) {
     } catch (err) {
       console.error("Heartbeat error:", err.message);
     }
-  }, interval);
+  };
+
+  await writeHeartbeat();
+  const timer = setInterval(writeHeartbeat, interval);
+  timer.unref?.();
+  return () => clearInterval(timer);
 }

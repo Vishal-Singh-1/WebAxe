@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { API_BASE } from "../apiBase.js";
 import { getAuthHeaders } from "../auth.js";
+import ScheduledScans from "./ScheduledScans.jsx";
 import "./ScanHistory.css";
 
 function formatDate(iso) {
@@ -50,16 +51,16 @@ function TrendChart({ title, points, valueKey, labelY }) {
     <div className="trend-chart">
       <h4>{title}</h4>
       <svg viewBox={`0 0 ${w} ${h}`} className="trend-svg" role="img" aria-label={title}>
-        <rect x={pad.l} y={pad.t} width={innerW} height={innerH} fill="#f5f4fa" rx="6" />
+        <rect x={pad.l} y={pad.t} width={innerW} height={innerH} fill="#edf3f1" rx="6" />
         <text x={8} y={pad.t + innerH / 2} className="axis-y" transform={`rotate(-90 8 ${pad.t + innerH / 2})`}>
           {labelY}
         </text>
-        <path d={pathD} fill="none" stroke="#6b5b95" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={pathD} fill="none" stroke="#287e82" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         {points.map((p, i) => {
           const x = pad.l + (innerW * i) / Math.max(points.length - 1, 1);
           const v = p[valueKey];
           const y = pad.t + innerH - ((v - minV) / span) * innerH;
-          return <circle key={p.scanId || i} cx={x} cy={y} r="4" fill="#4a3f8c" />;
+          return <circle key={p.scanId || i} cx={x} cy={y} r="4" fill="#0a2e39" />;
         })}
       </svg>
       <div className="trend-legend">
@@ -230,6 +231,8 @@ export default function ScanHistory({ token }) {
         </div>
         {recent.length === 0 && !loading && <p>No scans in the database yet.</p>}
       </section>
+
+      <ScheduledScans token={token} />
 
       {/* Per-URL trends */}
       <section className="history-section card-like">

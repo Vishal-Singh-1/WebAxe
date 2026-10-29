@@ -22,6 +22,8 @@ router.get("/worker/health", async (req, res) => {
 
     res.json({
       status: alive ? "alive" : "dead",
+      workerId: data.workerId || null,
+      currentScanId: data.currentScanId || null,
       lastHeartbeat: data.lastHeartbeat
     });
   } catch {

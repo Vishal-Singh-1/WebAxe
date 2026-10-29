@@ -66,8 +66,8 @@
 .scan-btn {
   min-height: 54px;
   padding: 0 20px;
-  background: #0a2e39;
-  color: #f8f5ef;
+  background: var(--button-bg);
+  color: var(--button-text);
   border: none;
   font-size: 0.96rem;
   font-weight: 700;

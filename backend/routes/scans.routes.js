@@ -7,7 +7,7 @@ import Scan from "../models/scan.js";
 import { cleanupScan } from "../utils/cleanupScan.js";
 import buildCombinedReport from "../utils/buildCombinedReport.js";
 import buildRecommendationReport from "../utils/buildRecommendationReport.js";
-import { generateAiSuggestions } from "../utils/generateAiSuggestions.js";
+import { generateAiSuggestions, hasUsableAiKey } from "../utils/generateAiSuggestions.js";
 import normalizeUrl from "../utils/normalizeUrl.js";
 import { listScanProfiles, resolveScanProfile } from "../config/scanProfiles.js";
 
@@ -20,17 +20,15 @@ const RECOMMENDATIONS_FILENAME = "recommendations.json";
 /** Legacy filename from earlier versions; still read if present. */
 const LEGACY_RECOMMENDATIONS_LATEST = "latest-recommendations.json";
 
-function hasUsableAiKey() {
-  return false;
-}
-
 function shouldRefreshCachedRecommendationReport(parsed) {
   const aiEnabledNow = hasUsableAiKey();
   const aiWasEnabled = parsed?.meta?.aiEnabled === true;
-  const aiWasUsed = parsed?.meta?.aiUsed === true;
 
   if (!aiEnabledNow) return false;
-  return !aiWasEnabled || !aiWasUsed;
+  // Regenerate reports created before Gemini was configured. If Gemini was enabled
+  // but temporarily unavailable, keep its saved fallback report until explicitly
+  // regenerated instead of retrying the provider on every page load.
+  return !aiWasEnabled;
 }
 
 async function fileExists(filePath) {
@@ -272,7 +270,10 @@ router.get("/scans/:id/status", async (req, res) => {
   res.json({
     status: scan.status,
     phase: scan.phase || "waiting",
-    startedAt: scan.timings?.startedAt || null
+    startedAt: scan.timings?.startedAt || null,
+    attempts: scan.attempts || 0,
+    maxAttempts: scan.maxAttempts || 3,
+    nextAttemptAt: scan.nextAttemptAt || null
   });
 });
 
@@ -294,23 +295,32 @@ router.post("/scans/:id/rerun", async (req, res) => {
   await Scan.findOneAndUpdate(
     { scanId: scan.scanId },
     {
-      status: "queued",
-      phase: "waiting",
-      summary: {
-        critical: 0,
-        warning: 0,
-        info: 0,
-        total: 0
+      $set: {
+        status: "queued",
+        phase: "waiting",
+        attempts: 0,
+        maxAttempts: 3,
+        summary: {
+          critical: 0,
+          warning: 0,
+          info: 0,
+          total: 0
+        },
+        issues: {},
+        audit: null,
+        artifacts: null,
+        error: null,
+        errorType: null,
+        userMessage: null,
+        "timings.startedAt": null,
+        "timings.finishedAt": null,
+        "timings.durationMs": null
       },
-      issues: {},
-      audit: null,
-      artifacts: null,
-      error: null,
-      errorType: null,
-      userMessage: null,
-      "timings.startedAt": null,
-      "timings.finishedAt": null,
-      "timings.durationMs": null
+      $unset: {
+        nextAttemptAt: 1,
+        workerId: 1,
+        leaseExpiresAt: 1
+      }
     }
   );
 
@@ -366,7 +376,10 @@ router.post("/scans/:id/recommendations/raw", async (req, res) => {
 
   const reportId = randomUUID();
   const recommendationReport = buildRecommendationReport({ scan, reportId });
-  const maxAiIssues = Number(process.env.AI_MAX_ISSUES || 5);
+  const configuredIssueLimit = Number.parseInt(process.env.AI_MAX_ISSUES || "5", 10);
+  const maxAiIssues = Number.isFinite(configuredIssueLimit)
+    ? Math.max(0, Math.min(configuredIssueLimit, recommendationReport.recommendations.length))
+    : 5;
   const aiInput = recommendationReport.recommendations.slice(0, maxAiIssues);
 
   const aiResult = await generateAiSuggestions({
@@ -378,14 +391,14 @@ router.post("/scans/:id/recommendations/raw", async (req, res) => {
     aiEnabled: hasUsableAiKey(),
     aiUsed: aiResult.aiUsed,
     aiReason: aiResult.reason,
-    aiModel: null,
+    aiModel: aiResult.model,
     aiIssueLimit: maxAiIssues
   };
 
   recommendationReport.recommendations = recommendationReport.recommendations.map((item, index) => {
     const aiData = aiResult.suggestionsByIssueId[item.issueId];
     const aiProcessed = index < maxAiIssues && !!aiData;
-    const generatedBy = aiProcessed ? "ai" : "rule-based";
+    const generatedBy = aiProcessed ? "gemini" : "general-guidance";
 
     return {
       ...item,
@@ -395,6 +408,9 @@ router.post("/scans/:id/recommendations/raw", async (req, res) => {
       generatedBy
     };
   });
+  recommendationReport.source = recommendationReport.meta.aiUsed
+    ? "gemini-ai-assisted-recommendations"
+    : "general-accessibility-guidance";
 
   await fs.mkdir(scanDir, { recursive: true });
 

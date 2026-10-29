@@ -994,6 +994,13 @@ export default function ScanResults({ token }) {
 
       <div className="card issues suggestions-card">
         <h3>Fix suggestions</h3>
+        {suggestionsMeta ? (
+          <p className="artifact-hint">
+            {suggestionsMeta.aiUsed
+              ? `Tailored with Gemini${suggestionsMeta.aiModel ? ` (${suggestionsMeta.aiModel})` : ""}. Review each suggestion against your page before applying it.`
+              : suggestionsMeta.aiReason || "Showing general accessibility guidance."}
+          </p>
+        ) : null}
 
         {isFailed ? (
           <p>Fix suggestions are not generated for failed scans.</p>
@@ -1011,6 +1018,7 @@ export default function ScanResults({ token }) {
               <div className="issue-top">
                 <div className="issue-title-row">
                   <strong>{item.issueId || "unknown-rule"}</strong>
+                  <small>{item.generatedBy === "gemini" ? "Gemini tailored" : "General guidance"}</small>
                 </div>
               </div>
               <div className="issue-middle">

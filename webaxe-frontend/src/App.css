@@ -10,6 +10,9 @@
   --line: rgba(30, 44, 47, 0.1);
   --accent: #114b5f;
   --accent-strong: #0a2e39;
+  --button-bg: #0a2e39;
+  --button-hover: #114b5f;
+  --button-text: #f8f5ef;
   --accent-soft: #dcecf1;
   --warm: #d67f48;
 }
@@ -22,6 +25,24 @@
   background:
     radial-gradient(circle at top left, rgba(214, 127, 72, 0.18), transparent 30%),
     linear-gradient(180deg, #fcf8f2 0%, var(--bg) 62%, #efe4d8 100%);
+}
+
+.app-container button:not(.hamburger):not(.menu-close) {
+  border-color: transparent;
+  background: var(--button-bg);
+  color: var(--button-text);
+  transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.app-container button:not(.hamburger):not(.menu-close):hover:not(:disabled) {
+  background: var(--button-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(10, 46, 57, 0.16);
+}
+
+.app-container button:not(.hamburger):not(.menu-close):disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
 }
 
 .header {
@@ -332,6 +353,13 @@
   font-weight: 700;
 }
 
+.menu-panel a:hover,
+.menu-panel a:focus-visible,
+.menu-panel a.active-nav {
+  background: rgba(220, 236, 241, 0.18);
+  color: #fff;
+}
+
 .menu-panel.open {
   visibility: visible;
   opacity: 1;
@@ -461,9 +489,9 @@
 }
 
 .account-link {
-  color: #1e2c2f;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(17, 75, 95, 0.1);
+  color: var(--button-text);
+  background: var(--button-bg);
+  border: 1px solid transparent;
 }
 
 .account-logout {
