@@ -4,13 +4,15 @@ services:
     env: node
     rootDir: backend
     plan: free
-    buildCommand: npm install && npx playwright install --with-deps chromium
+    buildCommand: npm ci && npx playwright install --with-deps chromium
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        value: "0"
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET

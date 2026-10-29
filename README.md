@@ -110,7 +110,7 @@ cd webaxe-frontend
 npm run build
 ```
 
-Set `VITE_API_URL` to the deployed API URL when building the frontend for production. Deploy the API and worker in an environment that supports long-running Node.js processes and Playwright Chromium. Configure `MONGO_URI`, `JWT_SECRET`, and optionally `GEMINI_API_KEY` as deployment environment variables; do not put secrets in frontend variables. The repository includes a `render.yaml` starting point, but production deployment still requires configured environment secrets, an accessible MongoDB instance, and a host suitable for the worker/browser workload.
+Set `VITE_API_URL` to the deployed API URL when building the frontend for production. Deploy the API and worker in an environment that supports long-running Node.js processes and Playwright Chromium. Configure `MONGO_URI`, `JWT_SECRET`, and optionally `GEMINI_API_KEY` as deployment environment variables; do not put secrets in frontend variables. The repository's `render.yaml` uses `PLAYWRIGHT_BROWSERS_PATH=0` so Chromium is installed alongside Playwright and remains available when the worker starts. If configuring Render manually, set this variable for build and runtime and use `npm ci && npx playwright install --with-deps chromium` as the build command.
 
 ## API overview
 
