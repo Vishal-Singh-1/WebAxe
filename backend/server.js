@@ -18,10 +18,32 @@ await connectDB();
 const app = express();
 const port = process.env.PORT || 3000;
 
+const developmentCorsOrigins = process.env.NODE_ENV === "production"
+  ? []
+  : [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://localhost:4173",
+      "http://127.0.0.1:4173"
+    ];
+const corsOrigins = new Set([
+  ...developmentCorsOrigins,
+  ...(process.env.CORS_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean)
+]);
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    // Requests without an Origin header (for example, health checks and CLI tools)
+    // are not browser cross-origin requests and remain allowed.
+    callback(null, !origin || corsOrigins.has(origin));
+  }
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
