@@ -18,8 +18,8 @@ await connectDB();
 const app = express();
 const port = process.env.PORT || 3000;
 
-const developmentCorsOrigins = process.env.NODE_ENV === "production"
-  ? []
+const defaultCorsOrigins = process.env.NODE_ENV === "production"
+  ? ["https://web-axe.vercel.app"]
   : [
       "http://localhost:5173",
       "http://127.0.0.1:5173",
@@ -27,7 +27,7 @@ const developmentCorsOrigins = process.env.NODE_ENV === "production"
       "http://127.0.0.1:4173"
     ];
 const corsOrigins = new Set([
-  ...developmentCorsOrigins,
+  ...defaultCorsOrigins,
   ...(process.env.CORS_ORIGINS || "")
     .split(",")
     .map((origin) => origin.trim().replace(/\/$/, ""))
