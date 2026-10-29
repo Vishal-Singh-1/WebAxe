@@ -54,7 +54,6 @@ Edit `backend/.env` and set the values for your environment:
 PORT=3000
 MONGO_URI=mongodb://127.0.0.1:27017/webaxe
 JWT_SECRET=replace_with_a_long_random_secret
-CORS_ORIGINS=http://localhost:5173
 GEMINI_API_KEY=your_key_here
 GEMINI_MODEL=gemini-2.5-flash
 AI_MAX_ISSUES=5
@@ -101,18 +100,6 @@ VITE_API_URL=http://localhost:3000
 ```
 
 Restart the Vite development server after changing frontend environment variables.
-
-## Deploy frontend and connect it to Render
-
-The frontend is configured for Vercel in `webaxe-frontend/vercel.json`, including a rewrite so React Router pages work when opened or refreshed directly.
-
-1. Push the project to GitHub and import the repository in Vercel.
-2. Set Vercel's **Root Directory** to `webaxe-frontend` and use the Vite defaults: build command `npm run build`, output directory `dist`.
-3. In Vercel's project environment variables, set `VITE_API_URL` to the Render backend's public base URL, for example `https://your-service.onrender.com` (no `/api` suffix).
-4. In Render's backend environment variables, set `CORS_ORIGINS` to the exact deployed frontend origin, for example `https://your-app.vercel.app` (no trailing slash). Add more comma-separated origins if you also use a custom domain or Vercel preview domain.
-5. Redeploy both services after changing environment variables.
-
-For local Vite development, the backend continues to allow `http://localhost:5173` and `http://127.0.0.1:5173` by default. The browser frontend uses bearer-token authentication, so CORS does not need cookie credentials.
 
 ## Production build
 
